@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Baloo+2:wght@700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8f5e9;--ui-bg:#ffffff;--ui-bg2:#f9fafb;--ui-border:#e5e7eb;
+  --text-primary:#1a2e1a;--text-muted:#6b7280;--text-soft:#9ca3af;
+  --gold:#f59e0b;--green:#22c55e;
+}
+body.dark{
+  --bg:#1a2318;--ui-bg:#1e2a1e;--ui-bg2:#243024;--ui-border:#2d3d2d;
+  --text-primary:#d4edda;--text-muted:#8faa8f;--text-soft:#5d7a5d;
+}
+body.retro{
+  --bg:#1a1209;--ui-bg:#120c00;--ui-bg2:#1c1209;--ui-border:#8b6914;
+  --text-primary:#f5deb3;--text-muted:#a1887f;--text-soft:#5d4037;
+  --gold:#ffd700;--green:#69f0ae;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);overflow:hidden;height:100vh;display:flex;flex-direction:column;user-select:none;transition:background .3s}
+.screen{display:none;position:fixed;inset:0;z-index:100;flex-direction:column}
+.screen.active{display:flex}
+
+/* AUTH */
+#auth-screen{align-items:center;justify-content:center;background:#0d0d0d;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.auth-wrap{width:100%;max-width:380px;padding:28px 24px}
+.auth-logo{font-size:42px;text-align:center;display:block;margin-bottom:16px;filter:drop-shadow(0 0 24px rgba(34,197,94,.25))}
+.auth-title{font-size:23px;font-weight:600;color:#fff;text-align:center;margin-bottom:5px;letter-spacing:-.4px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.auth-sub{font-size:13px;color:rgba(255,255,255,.38);text-align:center;margin-bottom:28px;font-family:-apple-system,'Segoe UI',sans-serif}
+.auth-tabs{display:flex;background:#161616;border-radius:8px;padding:3px;margin-bottom:18px;gap:3px;border:1px solid rgba(255,255,255,.07)}
+.auth-tab{flex:1;padding:8px;border:none;background:transparent;font-size:13px;font-weight:600;color:rgba(255,255,255,.35);cursor:pointer;border-radius:6px;transition:all .18s;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.auth-tab.active{background:#262626;color:#fff}
+.auth-tab:hover:not(.active){color:rgba(255,255,255,.6)}
+.auth-field{margin-bottom:13px}
+.auth-field label{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.auth-field input{width:100%;padding:11px 14px;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:14px;color:#fff;outline:none;transition:border-color .2s,background .2s;background:#161616;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.auth-field input::placeholder{color:rgba(255,255,255,.18)}
+.auth-field input:focus{border-color:rgba(255,255,255,.28);background:#1c1c1c}
+.auth-btn{width:100%;padding:12px;border:none;border-radius:8px;background:#fff;color:#000;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;letter-spacing:.1px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.auth-btn:hover{background:#ebebeb}
+.auth-btn:active{background:#d8d8d8;transform:scale(.99)}
+.auth-error{color:#f87171;font-size:12px;font-weight:600;margin-bottom:12px;display:none;background:rgba(239,68,68,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(239,68,68,.22);font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.saved-list{margin-top:20px}
+.saved-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.22);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
+.saved-entry{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#161616;border-radius:8px;margin-bottom:5px;cursor:pointer;transition:background .15s;border:1px solid rgba(255,255,255,.07)}
+.saved-entry:hover{background:#1e1e1e;border-color:rgba(255,255,255,.14)}
+.saved-entry-name{font-size:13px;font-weight:600;color:#fff;font-family:-apple-system,'Segoe UI',sans-serif}
+.saved-entry-info{font-size:11px;color:rgba(255,255,255,.33);margin-top:2px;font-family:-apple-system,'Segoe UI',sans-serif}
+.saved-entry-del{color:rgba(255,255,255,.22);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:4px;transition:color .15s}
+.saved-entry-del:hover{color:#f87171}
+
+/* GAME LAYOUT */
+#game-screen{background:var(--bg);transition:background .3s}
+#hud{background:var(--ui-bg);border-bottom:1.5px solid var(--ui-border);padding:6px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.hud-pill{display:flex;align-items:center;gap:5px;background:var(--ui-bg2);border:1.5px solid var(--ui-border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--text-primary);white-space:nowrap}
+.hud-pill.gold-pill{background:#fefce8;border-color:#fde68a;color:#92400e}
+body.dark .hud-pill.gold-pill{background:#2a2000;border-color:#78500a;color:#fbbf24}
+.bar-wrap{width:55px;height:5px;background:var(--ui-border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.autosave-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:savepulse 2.5s infinite}
+@keyframes savepulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+#main{display:flex;flex:1;overflow:hidden}
+#farm-wrap{flex:1;overflow:auto;padding:12px;display:flex;align-items:flex-start;justify-content:flex-start}
+#farm-wrap::-webkit-scrollbar{width:5px;height:5px}
+#farm-wrap::-webkit-scrollbar-thumb{background:var(--ui-border);border-radius:4px}
+#farm-grid{display:grid;gap:3px}
+
+/* TILES */
+.tile{width:52px;height:52px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;position:relative;border:2px solid rgba(0,0,0,.13);transition:filter .12s,transform .12s;overflow:hidden}
+.tile:hover{filter:brightness(1.25);transform:scale(1.1);z-index:5;border-color:rgba(255,255,255,.75);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.tile:active{transform:scale(.93)}
+.tile-s0 .crop-em{font-size:14px}.tile-s1 .crop-em{font-size:18px}.tile-s2 .crop-em{font-size:24px}.tile-s3 .crop-em{font-size:28px}
+.tile-ready{animation:readypulse 1.4s ease-in-out infinite}
+@keyframes readypulse{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.7)}50%{box-shadow:0 0 12px 6px rgba(250,204,21,.22)}}
+.sparkle{position:absolute;top:2px;right:3px;font-size:10px}
+.days-badge{position:absolute;bottom:2px;left:3px;font-size:9px;font-weight:800;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.water-dot{position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#60a5fa}
+.grass-deco{font-size:13px;opacity:.22}
+.tile-tree{width:52px;height:52px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid rgba(0,0,0,.13);pointer-events:none}
+.tile-cactus{pointer-events:auto!important;cursor:default!important}
+.tile-cactus:hover{filter:none!important;transform:none!important;box-shadow:none!important;border-color:rgba(0,0,0,.13)!important}
+.tile-cactus:active{transform:none!important}
+.tile-deco{font-size:20px}
+.tile-deco-path{opacity:.85}
+.deco-badge{position:absolute;bottom:1px;right:2px;font-size:8px;opacity:.6}
+
+/* DESKTOP SIDE PANEL */
+#side{width:290px;flex-shrink:0;background:var(--ui-bg);border-left:1.5px solid var(--ui-border);display:flex;flex-direction:column;overflow:hidden;transition:width .3s cubic-bezier(.25,.8,.25,1),opacity .3s ease}
+#side.side-collapsed{width:0;opacity:0;pointer-events:none}
+#side-content{flex:1;overflow-y:auto;padding:10px}
+#side-content::-webkit-scrollbar{width:4px}
+#side-content::-webkit-scrollbar-thumb{background:var(--ui-border);border-radius:4px}
+@media(max-width:680px){#side{display:none}}
+
+/* SHARED PANEL CONTENT */
+.tabs{display:flex;padding:6px 6px 0;gap:3px;border-bottom:1.5px solid var(--ui-border)}
+.tab-btn{flex:1;padding:8px 4px;background:transparent;color:var(--text-muted);border:none;border-radius:8px 8px 0 0;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--ui-bg2);color:var(--green);border-bottom:2.5px solid var(--green)}
+.tab-btn:hover:not(.active){background:var(--ui-bg2)}
+.s-sec{font-size:10px;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 6px}
+.s-sec:first-child{margin-top:0}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;background:var(--ui-bg2);border-radius:8px;margin-bottom:3px;font-size:12px;font-weight:600;border:1px solid var(--ui-border);color:var(--text-primary)}
+.inv-qty{color:var(--gold);font-weight:800}
+.inv-val{color:var(--green);font-size:11px;font-weight:700}
+.empty-msg{color:var(--text-soft);font-size:11px;line-height:2.1;text-align:center;padding:8px}
+.ship-btn{width:100%;margin-top:8px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:10px 6px;font-family:'Baloo 2',cursive;font-size:13px;cursor:pointer;border-radius:11px;transition:all .15s;box-shadow:0 3px 10px rgba(34,197,94,.2)}
+.ship-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+.pending-box{margin-top:8px;padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;font-size:11px;color:#166534;text-align:center;line-height:1.9;font-weight:600}
+body.dark .pending-box{background:#0d2a14;border-color:#166534;color:#4ade80}
+.stats-box{margin-top:10px;padding:10px;background:var(--ui-bg2);border-radius:10px;font-size:11px;color:var(--text-muted);line-height:2.3;border:1px solid var(--ui-border)}
+.stats-box b{color:var(--text-primary)}
+.shop-card{padding:10px;background:var(--ui-bg2);border:1px solid var(--ui-border);border-radius:12px;margin-bottom:7px;transition:border-color .15s}
+.shop-card:hover{border-color:#86efac}
+.shop-name{font-size:13px;font-weight:800;color:var(--text-primary)}
+.shop-price{font-size:11px;font-weight:700;color:var(--gold)}
+.shop-meta{font-size:10px;color:var(--text-soft);margin:3px 0 7px;line-height:1.8}
+.shop-row{display:flex;gap:5px}
+.buy-btn{flex:1;background:var(--ui-bg);color:#166534;border:1.5px solid #86efac;padding:6px 3px;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;cursor:pointer;border-radius:8px;transition:all .15s}
+body.dark .buy-btn{color:#4ade80;border-color:#166534;background:var(--ui-bg2)}
+.buy-btn:hover:not(:disabled){background:#f0fdf4;border-color:#4ade80}
+body.dark .buy-btn:hover:not(:disabled){background:#0d2a14}
+.buy-btn:disabled{opacity:.35;cursor:not-allowed}
+.winter-msg{color:var(--text-soft);font-size:12px;line-height:2.2;text-align:center;padding:24px 10px}
+
+/* SKILLS SECTION */
+.skill-item{margin-bottom:8px}
+.skill-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.skill-name{font-size:10px;font-weight:800;color:var(--text-primary)}
+.skill-level{font-size:10px;font-weight:800;color:var(--gold)}
+.skill-bar-outer{height:5px;background:var(--ui-border);border-radius:4px;overflow:hidden}
+.skill-bar-inner{height:100%;border-radius:4px;transition:width .5s}
+.skill-bonus-tag{font-size:9px;color:var(--green);font-weight:700;margin-top:2px;display:block}
+
+/* UPGRADES TAB */
+.upg-card{padding:10px;background:var(--ui-bg2);border:1px solid var(--ui-border);border-radius:12px;margin-bottom:7px;transition:border-color .15s}
+.upg-card:hover{border-color:#86efac}
+.upg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.upg-name{font-size:12px;font-weight:800;color:var(--text-primary)}
+.upg-cost{font-size:11px;font-weight:700;color:var(--gold)}
+.upg-desc{font-size:10px;color:var(--text-soft);line-height:1.7;margin:3px 0 5px}
+.upg-owned-tag{font-size:9px;font-weight:700;color:var(--green);margin-bottom:5px;display:block}
+.upg-buy-btn{width:100%;background:var(--ui-bg);color:#166534;border:1.5px solid #86efac;padding:7px 3px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border-radius:8px;transition:all .15s}
+body.dark .upg-buy-btn{color:#4ade80;border-color:#166534;background:var(--ui-bg2)}
+.upg-buy-btn:hover:not(:disabled){background:#f0fdf4;border-color:#4ade80}
+body.dark .upg-buy-btn:hover:not(:disabled){background:#0d2a14}
+.upg-buy-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* MARKET IMPROVEMENTS */
+.mkt-sell-all{width:100%;margin-bottom:9px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:9px 6px;font-family:'Baloo 2',cursive;font-size:12px;cursor:pointer;border-radius:11px;transition:all .15s;box-shadow:0 3px 10px rgba(34,197,94,.2)}
+.mkt-sell-all:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+.winter-bag-note{margin-top:7px;padding:10px 12px;background:#e0f2fe;border:1px solid #7dd3fc;border-radius:10px;font-size:11px;color:#0369a1;text-align:center;line-height:1.9;font-weight:600;cursor:pointer;transition:background .15s}
+.winter-bag-note:hover{background:#bae6fd}
+body.dark .winter-bag-note{background:#061527;border-color:#0369a1;color:#38bdf8}
+.barn-bonus-tag{font-size:9px;color:#d97706;font-weight:700;margin-left:3px}
+/* IO buttons in pause */
+.pause-io{display:flex;gap:8px;margin-top:8px}
+.pause-io-btn{flex:1;padding:9px 4px;border-radius:10px;border:1.5px solid var(--ui-border);background:var(--ui-bg2);color:var(--text-primary);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
+.pause-io-btn:hover{border-color:#6366f1;background:#eef2ff;color:#4f46e5}
+body.dark .pause-io-btn:hover{background:#1e1a3a;border-color:#6366f1;color:#818cf8}
+
+/* BOTTOM SHEET */
+#sheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:199;backdrop-filter:blur(3px);transition:opacity .3s}
+#sheet-bg.sheet-open{display:block}
+#bottom-sheet{position:fixed;left:0;right:0;bottom:0;height:88vh;background:var(--ui-bg);border-top:1.5px solid var(--ui-border);border-radius:20px 20px 0 0;z-index:200;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .34s cubic-bezier(.25,.8,.25,1);box-shadow:0 -10px 50px rgba(0,0,0,.22);will-change:transform;touch-action:none}
+#bottom-sheet.sheet-open{transform:translateY(0)}
+.sheet-handle-wrap{display:flex;align-items:center;justify-content:center;padding:10px 0 4px;flex-shrink:0;cursor:pointer}
+.sheet-handle{width:40px;height:4px;background:var(--ui-border);border-radius:4px}
+#sheet-content{flex:1;overflow-y:auto;padding:10px 12px 20px}
+#sheet-content::-webkit-scrollbar{width:4px}
+#sheet-content::-webkit-scrollbar-thumb{background:var(--ui-border);border-radius:4px}
+#swipe-hint{display:none;position:fixed;bottom:62px;left:50%;transform:translateX(-50%);background:var(--ui-bg);border:1.5px solid var(--ui-border);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:var(--text-muted);align-items:center;gap:6px;z-index:50;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.12);animation:hintBob 2.8s ease-in-out infinite;white-space:nowrap}
+@keyframes hintBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+
+@media(max-width:680px){
+  #farm-wrap{padding:8px}
+  .tile,.tile-tree{width:45px;height:45px;font-size:19px}
+  #farm-grid{gap:2px}
+  .hud-pill{font-size:10px;padding:3px 7px}
+  #swipe-hint{display:flex}
+}
+@media(max-width:400px){
+  .tile,.tile-tree{width:38px;height:38px;font-size:16px}
+  .hud-pill{font-size:9px;padding:3px 5px;gap:3px}
+}
+
+/* HELP OVERLAY */
+#help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:900;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+#help-overlay.show{display:flex;animation:fdIn .25s ease}
+.help-card{background:var(--ui-bg);border:1.5px solid var(--ui-border);border-radius:24px;width:340px;max-width:92vw;padding:30px 24px 22px;box-shadow:0 24px 80px rgba(0,0,0,.28);position:relative;overflow:hidden}
+.help-glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 70%);pointer-events:none}
+.help-skip{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-soft);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;padding:4px 8px;border-radius:6px;transition:color .15s,background .15s}
+.help-skip:hover{color:var(--text-muted);background:var(--ui-bg2)}
+.help-step-label{font-size:9px;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:6px}
+.help-emoji{font-size:52px;text-align:center;display:block;margin-bottom:10px;line-height:1}
+.help-title{font-family:'Baloo 2',cursive;font-size:20px;color:var(--text-primary);text-align:center;margin-bottom:10px;line-height:1.2}
+.help-body{font-size:13px;color:var(--text-muted);line-height:1.85;text-align:center;margin-bottom:14px;min-height:70px}
+.help-tip{font-size:11px;font-weight:700;color:var(--green);background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:8px 14px;text-align:center;margin-bottom:18px}
+body.dark .help-tip{background:#0d2a14;border-color:#166534;color:#4ade80}
+.help-dots{display:flex;justify-content:center;gap:5px;margin-bottom:18px}
+.help-dot{width:7px;height:7px;border-radius:50%;background:var(--ui-border);transition:background .25s,transform .25s,width .25s}
+.help-dot.active{background:var(--green);transform:scale(1.25);width:18px;border-radius:4px}
+.help-nav{display:flex;gap:8px;align-items:stretch}
+.help-back-btn{padding:10px 14px;border-radius:12px;border:1.5px solid var(--ui-border);background:var(--ui-bg2);color:var(--text-muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;flex-shrink:0}
+.help-back-btn:hover{color:var(--text-primary)}
+.help-next-btn{flex:1;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Baloo 2',cursive;font-size:14px;cursor:pointer;transition:all .15s}
+.help-next-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+
+/* ACHIEVEMENT POPUP */
+#achieve-popup{display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:960;min-width:260px;max-width:88vw;background:var(--ui-bg);border:2px solid var(--gold);border-radius:20px;padding:16px 22px 14px;box-shadow:0 8px 50px rgba(245,158,11,.3),0 0 0 1px rgba(245,158,11,.1);text-align:center;pointer-events:none}
+#achieve-popup.show{display:block;animation:achievePop .5s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes achievePop{from{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.85)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+.achieve-label{font-size:9px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px}
+.achieve-icon{font-size:36px;margin-bottom:4px;display:block}
+.achieve-name{font-family:'Baloo 2',cursive;font-size:17px;color:var(--text-primary);margin-bottom:3px}
+.achieve-desc{font-size:11px;color:var(--text-muted);line-height:1.6}
+
+/* TOOLBAR */
+#toolbar{background:var(--ui-bg);border-top:1.5px solid var(--ui-border);padding:8px 12px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;z-index:50}
+.tool-btn{background:var(--ui-bg2);color:var(--text-primary);border:1.5px solid var(--ui-border);padding:7px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.tool-btn:hover{border-color:#86efac;background:#f0fdf4;color:#166534}
+body.dark .tool-btn:hover{background:#0d2a14;border-color:#166534;color:#4ade80}
+.tool-btn.active{border-color:#22c55e;background:#dcfce7;color:#166534}
+body.dark .tool-btn.active{background:#0d2a14;border-color:#4ade80;color:#4ade80}
+.tool-btn:active{transform:scale(.95)}
+#seed-select,#deco-select{background:var(--ui-bg2);color:var(--text-primary);border:1.5px solid var(--ui-border);padding:7px 10px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;border-radius:10px;cursor:pointer;flex-shrink:0;outline:none}
+.spacer{flex:1}
+#sleep-btn{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;padding:8px 16px;font-family:'Baloo 2',cursive;font-size:13px;cursor:pointer;border-radius:10px;transition:all .15s;flex-shrink:0;box-shadow:0 3px 10px rgba(99,102,241,.3)}
+#sleep-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(99,102,241,.4)}
+#pause-btn{background:var(--ui-bg2);color:var(--text-primary);border:1.5px solid var(--ui-border);padding:7px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;transition:all .15s;flex-shrink:0}
+#pause-btn:hover{border-color:#6366f1;background:#eef2ff;color:#4f46e5}
+body.dark #pause-btn:hover{background:#1e1a3a;border-color:#6366f1;color:#818cf8}
+
+/* TOASTS */
+#toast-wrap{position:fixed;top:54px;right:14px;display:flex;flex-direction:column;gap:5px;z-index:999;pointer-events:none}
+.toast{background:var(--ui-bg);border:1.5px solid var(--ui-border);padding:8px 14px;font-size:12px;font-weight:700;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.1);animation:toastIn .22s ease;max-width:230px;color:var(--text-primary)}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-out{animation:toastOut .2s ease forwards}
+@keyframes toastOut{to{transform:translateX(110%);opacity:0}}
+.toast.t-success{border-color:#86efac;color:#166534}
+body.dark .toast.t-success{color:#4ade80;border-color:#166534}
+.toast.t-warn{border-color:#fde68a;color:#92400e}
+.toast.t-error{border-color:#fca5a5;color:#991b1b}
+
+/* SLEEP */
+#sleep-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.96);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#sleep-overlay.show{display:flex;animation:fdIn .4s ease}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+.sleep-moon{font-size:56px;animation:floatY 2s ease-in-out infinite}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.sleep-text{font-family:'Baloo 2',cursive;font-size:18px;color:#e2e8f0}
+.sleep-sub{font-size:12px;color:#64748b}
+
+/* SEASON BANNER */
+.season-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ui-bg);border:2px solid var(--ui-border);padding:18px 36px;font-family:'Baloo 2',cursive;font-size:18px;color:var(--text-primary);z-index:900;pointer-events:none;text-align:center;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.15);animation:bannerPop .45s ease}
+@keyframes bannerPop{from{transform:translate(-50%,-50%) scale(.5);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+/* PAUSE MENU */
+#pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center}
+#pause-overlay.show{display:flex;animation:fdIn .2s ease}
+.pause-card{background:var(--ui-bg);border-radius:22px;padding:30px 26px;width:320px;border:1.5px solid var(--ui-border);box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.pause-title{font-family:'Baloo 2',cursive;font-size:22px;color:var(--text-primary);text-align:center;margin-bottom:4px}
+.pause-sub{font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:20px}
+.pause-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--ui-border)}
+.pause-row:last-of-type{border-bottom:none}
+.pause-label{font-size:13px;font-weight:700;color:var(--text-primary)}
+.pause-desc{font-size:10px;color:var(--text-soft);margin-top:2px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:24px;cursor:pointer;transition:background .2s}
+.toggle input:checked+.toggle-slider{background:#22c55e}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
+.pause-btn-row{display:flex;gap:8px;margin-top:18px}
+.pause-action{flex:1;padding:9px 4px;border-radius:10px;border:1.5px solid var(--ui-border);background:var(--ui-bg2);color:var(--text-primary);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.pause-action:hover{border-color:#86efac;background:#f0fdf4;color:#166534}
+body.dark .pause-action:hover{background:#0d2a14;border-color:#166534;color:#4ade80}
+.pause-action.danger:hover{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+body.dark .pause-action.danger:hover{background:#2a0d0d;border-color:#991b1b;color:#f87171}
+.pause-close{width:100%;margin-top:8px;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Baloo 2',cursive;font-size:15px;cursor:pointer;transition:all .15s}
+.pause-close:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+
+/* ═══ RETRO THEME ═══ */
+body.retro,body.retro .tab-btn,body.retro .tool-btn,body.retro #seed-select,body.retro #deco-select,
+body.retro .pause-action,body.retro .pause-close,body.retro .pause-title,
+body.retro .pause-sub,body.retro .pause-label,body.retro .pause-desc,
+body.retro .ship-btn,body.retro .buy-btn,body.retro .s-sec,
+body.retro .inv-row,body.retro .shop-name,body.retro .shop-price,
+body.retro .shop-meta,body.retro .inv-qty,body.retro .inv-val,
+body.retro .empty-msg,body.retro .winter-msg,body.retro .stats-box,
+body.retro .pending-box,body.retro .hud-pill,body.retro .sleep-text,
+body.retro .sleep-sub,body.retro #sleep-btn,body.retro #pause-btn,
+body.retro .season-banner,body.retro .toast,body.retro #swipe-hint,
+body.retro .days-badge{font-family:'Press Start 2P',monospace!important}
+body.retro #hud{background:#120c00;border-bottom:3px solid #8b6914;box-shadow:none;padding:5px 10px}
+body.retro .hud-pill{background:transparent!important;border:none!important;border-radius:0!important;padding:2px 6px!important;font-size:6.5px!important;color:#f5deb3!important;gap:4px}
+body.retro .hud-pill.gold-pill{color:#ffd700!important}
+body.retro .autosave-dot{background:#69f0ae}
+body.retro .bar-wrap{background:#2d1b00;border-radius:2px}
+body.retro .bar-fill{border-radius:2px}
+body.retro .tile{border-radius:4px;border:1px solid rgba(0,0,0,.3)}
+body.retro .tile:hover{box-shadow:0 0 0 2px #8b6914!important;border-color:#8b6914}
+body.retro .tile-tree{border-radius:4px;border:1px solid rgba(0,0,0,.3)}
+body.retro .days-badge{font-size:5.5px}
+body.retro #bottom-sheet{background:#120c00;border-top:3px solid #8b6914}
+body.retro .sheet-handle{background:#3e2723}
+body.retro .tabs{background:#120c00;border-bottom:2px solid #8b6914;padding:0}
+body.retro #side{background:#120c00;border-left:3px solid #8b6914}
+body.retro .help-card{background:#120c00;border:3px solid #8b6914;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .help-title{color:#ffd700}
+body.retro .help-body{color:#a1887f}
+body.retro .help-step-label{color:#5d4037}
+body.retro .help-tip{background:#0d2e10;border:1px solid #388e3c;color:#a5d6a7;border-radius:3px}
+body.retro .help-back-btn{background:#1c1209;color:#a1887f;border:1px solid #3e2723;border-radius:3px}
+body.retro .help-next-btn{background:#1b5e20!important;border:2px solid #388e3c;border-radius:3px}
+body.retro .help-skip{color:#5d4037}
+body.retro .help-dot{background:#3e2723}
+body.retro .help-dot.active{background:#ffd700}
+body.retro #achieve-popup{background:#120c00;border:3px solid #ffd700;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .achieve-label{color:#ffd700}
+body.retro .achieve-name{color:#f5deb3}
+body.retro .achieve-desc{color:#a1887f}
+body.retro .tab-btn{border-radius:0;font-size:5.5px;color:#a1887f;padding:8px 2px}
+body.retro .tab-btn.active{background:#2d1b00;color:#ffd700;border-bottom:2px solid #ffd700}
+body.retro .tab-btn:hover:not(.active){background:#1c1209;color:#f5deb3}
+body.retro #sheet-content{padding:8px}
+body.retro .s-sec{color:#a5d6a7;font-size:8px;letter-spacing:.3px;margin:10px 0 5px;font-family:'Press Start 2P',monospace}
+body.retro .inv-row{background:#1c1209;border:1px solid #3e2723;border-radius:3px;font-size:5.5px;color:#f5deb3;padding:5px 7px}
+body.retro .inv-qty{color:#ffd700}
+body.retro .inv-val{color:#69f0ae;font-size:5.5px}
+body.retro .empty-msg{color:#5d4037;font-size:5.5px;line-height:2}
+body.retro .ship-btn{background:#1b5e20!important;background-image:none!important;color:#a5d6a7;border:2px solid #388e3c;border-radius:3px;font-size:6px;box-shadow:none;padding:8px 4px}
+body.retro .ship-btn:hover{background:#2e7d32!important;transform:none!important;box-shadow:none!important}
+body.retro .pending-box{background:#0d3b15;border:1px solid #388e3c;border-radius:3px;color:#a5d6a7;font-size:5.5px}
+body.retro .stats-box{background:#1c1209;border:1px solid #3e2723;border-radius:3px;color:#a1887f;font-size:5.5px;line-height:2.2}
+body.retro .stats-box b{color:#f5deb3}
+body.retro .shop-card{background:#1c1209;border:1px solid #3e2723;border-radius:3px;padding:8px}
+body.retro .shop-card:hover{border-color:#8b6914}
+body.retro .shop-name{color:#f5deb3;font-size:6px}
+body.retro .shop-price{color:#ffd700;font-size:5px}
+body.retro .shop-meta{color:#5d4037;font-size:4.5px;line-height:1.8}
+body.retro .buy-btn{background:#1c1209;color:#69f0ae;border:1px solid #1b5e20;border-radius:2px;font-size:4.5px}
+body.retro .buy-btn:hover:not(:disabled){background:#0d2e10!important;border-color:#388e3c}
+body.retro .winter-msg{color:#5d4037;font-size:5.5px;line-height:2.4}
+body.retro #dn-icon{font-size:10px!important}
+body.retro #hud-energy{font-size:6px!important}
+body.retro #toolbar{background:#120c00;border-top:3px solid #8b6914;padding:6px 8px}
+body.retro .tool-btn{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:6.5px;padding:6px 8px}
+body.retro .tool-btn:hover{border-color:#8b6914!important;background:#2d1b00!important;color:#f5deb3!important}
+body.retro .tool-btn.active{border-color:#ffd700!important;background:#2d1b00!important;color:#ffd700!important}
+body.retro #seed-select,body.retro #deco-select{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:5.5px}
+body.retro #sleep-btn{background:#1a237e!important;background-image:none!important;color:#e8eaf6;border:2px solid #7986cb;border-radius:3px;font-size:6.5px;padding:6px 12px;box-shadow:none}
+body.retro #sleep-btn:hover{background:#283593!important;transform:none!important;box-shadow:none!important}
+body.retro #pause-btn{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:6.5px}
+body.retro #pause-btn:hover{border-color:#8b6914!important;background:#2d1b00!important;color:#f5deb3!important}
+body.retro .toast{background:#120c00;border-width:2px;border-style:solid;border-radius:3px;font-size:6px;box-shadow:3px 3px 0 rgba(0,0,0,.7);color:#f5deb3}
+body.retro .toast.t-success{border-color:#69f0ae!important;color:#a5d6a7!important}
+body.retro .toast.t-warn{border-color:#ffb74d!important;color:#ffe0b2!important}
+body.retro .toast.t-error{border-color:#ef5350!important;color:#ffcdd2!important}
+body.retro .toast.t-info{border-color:#4fc3f7!important;color:#b3e5fc!important}
+body.retro .pause-card{background:#120c00;border:3px solid #8b6914;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .pause-title{color:#ffd700;font-size:13px}
+body.retro .pause-sub{color:#a1887f;font-size:6px}
+body.retro .pause-row{border-color:#3e2723}
+body.retro .pause-label{color:#f5deb3;font-size:7px}
+body.retro .pause-desc{color:#5d4037;font-size:5.5px}
+body.retro .toggle-slider{background:#3e2723}
+body.retro .toggle input:checked+.toggle-slider{background:#388e3c}
+body.retro .pause-action{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:6px}
+body.retro .pause-action:hover{border-color:#8b6914!important;background:#2d1b00!important;color:#ffd700!important}
+body.retro .pause-action.danger:hover{border-color:#ef5350!important;background:#2a0d0d!important;color:#ef9a9a!important}
+body.retro .pause-close{background:#1b5e20!important;background-image:none!important;border:2px solid #388e3c;border-radius:3px;font-size:7px;box-shadow:none}
+body.retro .pause-close:hover{transform:none!important;box-shadow:none!important;background:#2e7d32!important}
+body.retro .season-banner{background:#120c00;border:3px solid #ffd700;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8);color:#ffd700;font-size:12px}
+body.retro .sleep-text{font-size:12px;color:#7986cb}
+body.retro .sleep-sub{color:#5c6bc0;font-size:7px}
+.tile-idle{border:1.5px dashed rgba(156,163,175,.5)!important}
+body.retro .tile-idle{border:1.5px dashed #8b6914!important}
+/* Retro overrides for new elements */
+body.retro .upg-card{background:#1c1209;border:1px solid #3e2723;border-radius:3px}
+body.retro .upg-card:hover{border-color:#8b6914}
+body.retro .upg-name{color:#f5deb3;font-size:6px;font-family:'Press Start 2P',monospace}
+body.retro .upg-cost{color:#ffd700;font-size:5px;font-family:'Press Start 2P',monospace}
+body.retro .upg-desc{color:#5d4037;font-size:4.5px;font-family:'Press Start 2P',monospace;line-height:1.9}
+body.retro .upg-owned-tag{color:#69f0ae;font-size:4.5px;font-family:'Press Start 2P',monospace}
+body.retro .upg-buy-btn{background:#1c1209;color:#69f0ae;border:1px solid #1b5e20;border-radius:2px;font-size:4.5px;font-family:'Press Start 2P',monospace}
+body.retro .upg-buy-btn:hover:not(:disabled){background:#0d2e10!important;border-color:#388e3c}
+body.retro .mkt-sell-all{background:#1b5e20!important;background-image:none!important;border:2px solid #388e3c;border-radius:3px;font-size:5px;color:#a5d6a7;box-shadow:none;font-family:'Press Start 2P',monospace}
+body.retro .mkt-sell-all:hover{transform:none!important;box-shadow:none!important;background:#2e7d32!important}
+body.retro .winter-bag-note{background:#061527;border:1px solid #0369a1;color:#4fc3f7;font-size:5px;font-family:'Press Start 2P',monospace;border-radius:3px;line-height:2.2}
+body.retro .skill-name{color:#f5deb3;font-size:5px;font-family:'Press Start 2P',monospace}
+body.retro .skill-level{color:#ffd700;font-size:5px;font-family:'Press Start 2P',monospace}
+body.retro .skill-bonus-tag{color:#69f0ae;font-size:4px;font-family:'Press Start 2P',monospace}
+body.retro .pause-io-btn{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:5.5px;font-family:'Press Start 2P',monospace}
+body.retro .pause-io-btn:hover{border-color:#6366f1!important;background:#1a237e!important;color:#9fa8da!important}
+
+/* ═══ WINTER MARKET / AUCTION HOUSE ═══ */
+.market-header{font-size:10px;color:var(--text-soft);margin-bottom:10px;padding:6px 10px;background:var(--ui-bg2);border-radius:8px;border:1px solid var(--ui-border);text-align:center;line-height:1.6}
+.market-row{padding:8px 10px;background:var(--ui-bg2);border:1px solid var(--ui-border);border-radius:10px;margin-bottom:5px;transition:border-color .15s}
+.market-row-has{border-color:#86efac;background:#f0fdf4}
+body.dark .market-row-has{background:#0a2016;border-color:#166534}
+.market-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px}
+.market-left{display:flex;align-items:center;gap:7px;flex:1;min-width:0}
+.market-em{font-size:18px;flex-shrink:0}
+.market-name{font-size:11px;font-weight:800;color:var(--text-primary)}
+.market-qty{font-size:9px;color:var(--green);font-weight:700}
+.market-price-block{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.market-mini{display:flex;align-items:flex-end;height:16px;gap:1px}
+.market-price{font-size:12px;font-weight:800;color:var(--text-primary);min-width:36px;text-align:right}
+.market-trend{font-size:9px;font-weight:800;min-width:32px;text-align:right}
+.market-sell-row{display:flex;gap:5px}
+.sell-mkt-btn{flex:1;padding:5px 6px;border-radius:7px;border:1.5px solid #86efac;background:var(--ui-bg);color:#166534;font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;cursor:pointer;transition:all .14s;white-space:nowrap;text-align:center}
+body.dark .sell-mkt-btn{color:#4ade80;border-color:#166534;background:var(--ui-bg2)}
+.sell-mkt-btn:hover{background:#dcfce7;border-color:#4ade80}
+body.dark .sell-mkt-btn:hover{background:#0a2016}
+.sell-mkt-btn.sell-all{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-color:transparent}
+.sell-mkt-btn.sell-all:hover{opacity:.9}
+.market-note{font-size:11px;color:var(--text-soft);text-align:center;padding:12px 8px;line-height:1.8}
+.market-yr-badge{display:inline-block;font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;margin-left:5px;vertical-align:middle}
+.market-yr-badge.bull{background:#dcfce7;color:#166534}
+.market-yr-badge.bear{background:#fef2f2;color:#991b1b}
+body.dark .market-yr-badge.bull{background:#0a2016;color:#4ade80}
+body.dark .market-yr-badge.bear{background:#2a0d0d;color:#f87171}
+body.retro .market-header{background:#1c1209;border:1px solid #3e2723;border-radius:3px;color:#a1887f;font-size:6px;font-family:'Press Start 2P',monospace}
+body.retro .market-row{background:#1c1209;border:1px solid #3e2723;border-radius:3px}
+body.retro .market-row-has{border-color:#388e3c;background:#0d2010}
+body.retro .market-name{color:#f5deb3;font-size:6px;font-family:'Press Start 2P',monospace}
+body.retro .market-qty{color:#69f0ae;font-size:5px;font-family:'Press Start 2P',monospace}
+body.retro .market-price{color:#ffd700;font-size:6px;font-family:'Press Start 2P',monospace}
+body.retro .market-trend{font-size:5.5px;font-family:'Press Start 2P',monospace}
+body.retro .sell-mkt-btn{background:#1c1209;color:#69f0ae;border:1px solid #1b5e20;border-radius:2px;font-size:4.5px;font-family:'Press Start 2P',monospace}
+body.retro .sell-mkt-btn.sell-all{background:#1b5e20;color:#a5d6a7;border-color:#388e3c}
+body.retro .market-note{color:#5d4037;font-size:5.5px;font-family:'Press Start 2P',monospace;line-height:2}
+body.retro .market-yr-badge.bull{background:#0a2016;color:#69f0ae;font-family:'Press Start 2P',monospace;font-size:5px}
+body.retro .market-yr-badge.bear{background:#2a0d0d;color:#ef9a9a;font-family:'Press Start 2P',monospace;font-size:5px}
+
+/* ═══ CROP SWAY ═══ */
+@keyframes cropSway{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(-1px)}}
+@keyframes cropSwayReady{0%,100%{transform:rotate(-4deg) translateY(0) scale(1.04)}50%{transform:rotate(4deg) translateY(-2px) scale(1.08)}}
+.crop-em{display:inline-block;transform-origin:bottom center;animation:cropSway 2.6s ease-in-out infinite}
+.tile-s0 .crop-em{animation-duration:3.4s}
+.tile-s1 .crop-em{animation-duration:3s}
+.tile-s2 .crop-em{animation-duration:2.6s}
+.tile-s3 .crop-em{animation-name:cropSwayReady;animation-duration:1.8s}
+.tile:nth-child(3n+1) .crop-em{animation-delay:-.4s}
+.tile:nth-child(3n+2) .crop-em{animation-delay:-.9s}
+.tile:nth-child(3n) .crop-em{animation-delay:-1.5s}
+
+/* ═══ TOOL EFFECTS ═══ */
+.tile-effect{position:fixed;pointer-events:none;z-index:600;font-size:22px;line-height:1;animation:tileEffectPop .65s ease forwards}
+@keyframes tileEffectPop{0%{transform:scale(.3) translateY(0);opacity:1}55%{transform:scale(1.5) translateY(-18px);opacity:.9}100%{transform:scale(.7) translateY(-36px);opacity:0}}
+
+/* ═══ AMBIENT PARTICLES ═══ */
+#ambient-layer{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.ambient-particle{position:absolute;pointer-events:none;user-select:none;line-height:1;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes ambientFall{0%{transform:translateY(-40px) rotate(0deg) translateX(0);opacity:0}8%{opacity:.6}88%{opacity:.4}100%{transform:translateY(110vh) rotate(400deg) translateX(28px);opacity:0}}
+@keyframes ambientRise{0%{transform:translateY(110vh) rotate(0deg) translateX(0);opacity:0}8%{opacity:.6}88%{opacity:.4}100%{transform:translateY(-40px) rotate(-300deg) translateX(-18px);opacity:0}}
+
+/* ═══ HARVEST ALL ═══ */
+#tool-harvestall{display:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;padding:7px 14px;font-family:'Baloo 2',cursive;font-size:12px;cursor:pointer;border-radius:10px;white-space:nowrap;flex-shrink:0;box-shadow:0 3px 10px rgba(245,158,11,.35);animation:harvestPulse 1.6s ease-in-out infinite}
+@keyframes harvestPulse{0%,100%{box-shadow:0 3px 10px rgba(245,158,11,.35)}50%{box-shadow:0 2px 22px rgba(245,158,11,.8)}}
+#tool-harvestall:hover{opacity:.9;transform:translateY(-1px)}
+body.retro #tool-harvestall{background:#b8860b!important;border:2px solid #ffd700;border-radius:3px;font-size:6px;box-shadow:none;animation:none}
+
+/* ═══ MAP TAB ═══ */
+.map-wrap{display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.map-visual{position:relative;width:100%;aspect-ratio:5/3;border-radius:12px;overflow:hidden;background:#2d6a4f;border:2px solid var(--ui-border);flex-shrink:0;min-height:150px}
+.map-plot{position:absolute;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:filter .15s,box-shadow .15s;border:2px solid rgba(0,0,0,.18)}
+.map-plot:hover{filter:brightness(1.15);box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+.map-plot-em{font-size:18px;line-height:1}
+.map-plot-lbl{font-size:7px;font-weight:800;color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.7);text-align:center;line-height:1.3;margin-top:2px}
+.map-plot-status{font-size:6px;font-weight:800;color:rgba(255,255,255,.75);text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.map-owned-ring{box-shadow:0 0 0 3px #22c55e,0 0 0 5px rgba(34,197,94,.3)!important}
+.map-rented-ring{box-shadow:0 0 0 3px #f59e0b,0 0 0 5px rgba(245,158,11,.3)!important}
+.land-card{padding:10px;background:var(--ui-bg2);border:1px solid var(--ui-border);border-radius:12px;transition:border-color .15s}
+.land-card:hover{border-color:#86efac}
+.land-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.land-card-left{display:flex;align-items:center;gap:7px}
+.land-em{font-size:20px}
+.land-name{font-size:12px;font-weight:800;color:var(--text-primary)}
+.land-fert{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:4px}
+.land-fert.poor{background:#fef9c3;color:#92400e}
+.land-fert.average{background:#dcfce7;color:#166534}
+.land-fert.rich{background:#d1fae5;color:#065f46}
+.land-fert.volcanic{background:#fee2e2;color:#991b1b}
+body.dark .land-fert.poor{background:#2a1f00;color:#fbbf24}
+body.dark .land-fert.average{background:#0d2a14;color:#4ade80}
+body.dark .land-fert.rich{background:#0a2e1a;color:#34d399}
+body.dark .land-fert.volcanic{background:#2a0d0d;color:#f87171}
+.land-desc{font-size:10px;color:var(--text-soft);line-height:1.6;margin:4px 0}
+.land-price-row{display:flex;gap:4px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.land-price-tag{font-size:10px;font-weight:700;color:var(--gold)}
+.land-rent-tag{font-size:9px;font-weight:700;color:var(--text-muted)}
+.land-interest-tag{font-size:8px;color:var(--text-soft)}
+.land-btn-row{display:flex;gap:5px}
+.land-btn{flex:1;padding:6px 3px;border-radius:8px;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .14s;text-align:center}
+.land-btn-buy{background:#dcfce7;color:#166534;border-color:#86efac}
+body.dark .land-btn-buy{background:#0d2a14;color:#4ade80;border-color:#166534}
+.land-btn-buy:hover:not(:disabled){background:#bbf7d0;border-color:#4ade80}
+.land-btn-rent{background:#fef9c3;color:#92400e;border-color:#fde68a}
+body.dark .land-btn-rent{background:#2a1f00;color:#fbbf24;border-color:#78500a}
+.land-btn-rent:hover:not(:disabled){background:#fef08a;border-color:#f59e0b}
+.land-btn-leave{background:var(--ui-bg);color:#991b1b;border-color:#fca5a5}
+body.dark .land-btn-leave{background:var(--ui-bg2);color:#f87171;border-color:#7f1d1d}
+.land-btn-leave:hover{background:#fef2f2;border-color:#f87171}
+body.dark .land-btn-leave:hover{background:#2a0d0d}
+.land-btn:disabled{opacity:.35;cursor:not-allowed}
+.land-owned-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:#166534;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:3px 8px;margin-bottom:5px}
+body.dark .land-owned-badge{color:#4ade80;background:#0d2a14;border-color:#166534}
+.land-rented-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:#92400e;background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:3px 8px;margin-bottom:5px}
+body.dark .land-rented-badge{color:#fbbf24;background:#2a1f00;border-color:#78500a}
+.land-debt-tag{font-size:9px;color:#991b1b;font-weight:700}
+.map-legend{display:flex;gap:8px;flex-wrap:wrap;padding:6px 0;font-size:9px;font-weight:700;color:var(--text-muted)}
+.map-legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;vertical-align:middle}
+
+/* Retro map styles */
+body.retro .map-visual{border:2px solid #8b6914;border-radius:4px}
+body.retro .map-plot{border-radius:3px}
+body.retro .land-card{background:#1c1209;border:1px solid #3e2723;border-radius:3px}
+body.retro .land-name{color:#f5deb3;font-size:6px;font-family:'Press Start 2P',monospace}
+body.retro .land-desc{color:#5d4037;font-size:4.5px;font-family:'Press Start 2P',monospace;line-height:1.8}
+body.retro .land-price-tag{font-size:5px;font-family:'Press Start 2P',monospace}
+body.retro .land-rent-tag{font-size:4.5px;font-family:'Press Start 2P',monospace}
+body.retro .land-interest-tag{font-size:4px;font-family:'Press Start 2P',monospace}
+body.retro .land-btn{font-size:4.5px;font-family:'Press Start 2P',monospace;border-radius:2px}
+body.retro .land-btn-buy{background:#0d2e10;color:#69f0ae;border-color:#1b5e20}
+body.retro .land-btn-rent{background:#2a1f00;color:#ffd700;border-color:#8b6914}
+body.retro .land-btn-leave{background:#1c1209;color:#ef9a9a;border-color:#7f1d1d}
+body.retro .land-owned-badge{font-size:4.5px;font-family:'Press Start 2P',monospace;border-radius:2px;background:#0d2e10;color:#69f0ae;border-color:#1b5e20}
+body.retro .land-rented-badge{font-size:4.5px;font-family:'Press Start 2P',monospace;border-radius:2px;background:#2a1f00;color:#ffd700;border-color:#8b6914}
+body.retro .land-fert{font-size:4px;font-family:'Press Start 2P',monospace;border-radius:2px}
+body.retro .map-legend{font-size:4.5px;font-family:'Press Start 2P',monospace}
+
+/* ═══ CACTUS POPUP ═══ */
+#cactus-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:980;background:var(--ui-bg);border:2px solid #22c55e;border-radius:20px;padding:24px 28px 20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.28),0 0 0 1px rgba(34,197,94,.15);pointer-events:none;min-width:220px}
+#cactus-popup.show{display:block;animation:cactusPopIn .4s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes cactusPopIn{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.cactus-pop-em{font-size:52px;display:block;margin-bottom:8px;line-height:1}
+.cactus-pop-bubble{background:#f0fdf4;border:1.5px solid #86efac;border-radius:14px;padding:10px 16px;margin-bottom:8px;position:relative}
+.cactus-pop-bubble::before{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#86efac}
+.cactus-pop-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#f0fdf4}
+body.dark .cactus-pop-bubble{background:#0d2a14;border-color:#166534}
+body.dark .cactus-pop-bubble::before{border-top-color:#166534}
+body.dark .cactus-pop-bubble::after{border-top-color:#0d2a14}
+.cactus-pop-hmm{font-family:'Baloo 2',cursive;font-size:22px;color:var(--text-primary)}
+.cactus-pop-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+body.retro #cactus-popup{background:#120c00;border:3px solid #388e3c;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .cactus-pop-bubble{background:#0d2e10;border-color:#388e3c;border-radius:3px}
+body.retro .cactus-pop-hmm{color:#69f0ae;font-size:14px;font-family:'Press Start 2P',monospace}
+body.retro .cactus-pop-sub{color:#5d4037;font-size:5px;font-family:'Press Start 2P',monospace}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-wrap">
+    <span class="auth-logo">🌾</span>
+    <div class="auth-title">Valley Farm</div>
+    <div class="auth-sub">A peaceful farming life awaits</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">New Farm</button>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div class="auth-field">
+      <label>Farmer Name</label>
+      <input type="text" id="auth-name" placeholder="e.g. Old MacDonald" autocomplete="username">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="auth-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')authSubmit()">
+    </div>
+    <button class="auth-btn" id="auth-submit-btn" onclick="authSubmit()">Sign In</button>
+    <div class="saved-list" id="saved-list"></div>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen">
+  <div id="ambient-layer"></div>
+  <div id="hud">
+    <div class="hud-pill">📅 <span id="hud-day">Day 1</span></div>
+    <div class="hud-pill" id="season-pill">🌸 <span id="hud-season">Spring</span></div>
+    <div class="hud-pill">📆 <span id="hud-year">Yr.1</span></div>
+    <div class="hud-pill"><span id="weather-em">☀️</span> <span id="hud-weather">Sunny</span></div>
+    <div class="hud-pill">
+      <span id="dn-icon" style="font-size:14px">☀️</span>
+      <span id="hud-time">6:00 AM</span>
+      <div class="bar-wrap"><div class="bar-fill" id="time-bar" style="width:0%;background:#f59e0b"></div></div>
+    </div>
+    <div class="hud-pill">⚡<div class="bar-wrap"><div class="bar-fill" id="energy-bar" style="width:100%;background:#22c55e"></div></div><span id="hud-energy" style="font-size:11px">100</span></div>
+    <div class="hud-pill gold-pill">💰 <span id="hud-gold">500g</span></div>
+    <span id="hud-pending" style="font-size:11px;color:#16a34a;font-weight:700"></span>
+    <div class="hud-pill" style="gap:5px"><div class="autosave-dot"></div><span style="font-size:10px;color:var(--text-soft);font-weight:700">AUTO</span></div>
+  </div>
+
+  <div id="main">
+    <div id="farm-wrap"><div id="farm-grid"></div></div>
+    <div id="side">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="inv" onclick="setTab('inv')">🎒 Bag</button>
+        <button class="tab-btn" data-tab="shop" onclick="setTab('shop')">🛒 Shop</button>
+        <button class="tab-btn" data-tab="upgrades" onclick="setTab('upgrades')">⚒ Upgrades</button>
+        <button class="tab-btn" data-tab="map" onclick="setTab('map')">🗺 Map</button>
+      </div>
+      <div id="side-content"></div>
+    </div>
+  </div>
+
+  <div id="toolbar">
+    <button class="tool-btn" onclick="openHelp()" title="How to play" style="font-size:15px;padding:7px 11px">❓</button>
+    <button class="tool-btn active" id="tool-hoe" onclick="setTool('hoe')">⛏ Hoe</button>
+    <button class="tool-btn" id="tool-water" onclick="setTool('water')">💧 Water</button>
+    <button class="tool-btn" id="tool-seed" onclick="setTool('seed')">🌱 Seeds</button>
+    <button class="tool-btn" id="tool-shovel" onclick="setTool('shovel')">🪱 Dig Up</button>
+    <button class="tool-btn" id="tool-scythe" onclick="setTool('scythe')">🌾 Scythe</button>
+    <button id="tool-harvestall" onclick="scytheAll()">⚡ Harvest All</button>
+    <button class="tool-btn" id="tool-deco" onclick="setTool('deco')">🎨 Deco</button>
+    <select id="seed-select" style="display:none" onchange="G.seed=this.value"></select>
+    <select id="deco-select" style="display:none" onchange="G.deco=this.value">
+      <option value="path">🟫 Path</option>
+      <option value="fence">🪵 Fence</option>
+      <option value="flower">🌸 Flowers</option>
+      <option value="lamp">🏮 Lamp</option>
+      <option value="sign">🪧 Sign</option>
+      <option value="rock">🪨 Rock</option>
+    </select>
+    <div class="spacer"></div>
+    <button class="tool-btn" id="bag-btn" onclick="toggleBag()">🎒 Bag</button>
+    <button id="pause-btn" onclick="openPause()">⏸ Menu</button>
+    <button id="sleep-btn" onclick="doSleep()">🌙 Sleep</button>
+  </div>
+</div>
+
+<!-- Bottom sheet backdrop -->
+<div id="sheet-bg" onclick="closeSheet()"></div>
+
+<!-- Bottom sheet panel -->
+<div id="bottom-sheet">
+  <div class="sheet-handle-wrap" onclick="closeSheet()">
+    <div class="sheet-handle"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="inv" onclick="setTab('inv')">🎒 Bag</button>
+    <button class="tab-btn" data-tab="shop" onclick="setTab('shop')">🛒 Shop</button>
+    <button class="tab-btn" data-tab="upgrades" onclick="setTab('upgrades')">⚒ Upgrades</button>
+    <button class="tab-btn" data-tab="map" onclick="setTab('map')">🗺 Map</button>
+  </div>
+  <div id="sheet-content"></div>
+</div>
+
+<!-- Swipe-up hint (mobile only) -->
+<div id="swipe-hint" onclick="openSheet()">↑ Bag &amp; Shop</div>
+
+<div id="toast-wrap"></div>
+
+<div id="sleep-overlay">
+  <div class="sleep-moon">🌙</div>
+  <div class="sleep-text">Resting...</div>
+  <div class="sleep-sub">Crops grow overnight ✨</div>
+</div>
+
+<!-- HELP OVERLAY -->
+<div id="help-overlay">
+  <div class="help-card">
+    <div class="help-glow"></div>
+    <button class="help-skip" onclick="closeHelp()">Skip ✕</button>
+    <div class="help-step-label" id="help-step-label">Step 1 of 10</div>
+    <span class="help-emoji" id="help-emoji">🌾</span>
+    <div class="help-title" id="help-title">Welcome!</div>
+    <div class="help-body" id="help-body"></div>
+    <div class="help-tip" id="help-tip"></div>
+    <div class="help-dots" id="help-dots"></div>
+    <div class="help-nav">
+      <button class="help-back-btn" id="help-prev" onclick="helpNav(-1)" style="display:none">←</button>
+      <button class="help-next-btn" id="help-next" onclick="helpNav(1)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT POPUP -->
+<div id="achieve-popup">
+  <div class="achieve-label">🏆 Achievement Unlocked!</div>
+  <span class="achieve-icon" id="achieve-icon">💰</span>
+  <div class="achieve-name" id="achieve-name"></div>
+  <div class="achieve-desc" id="achieve-desc"></div>
+</div>
+
+<!-- CACTUS POPUP -->
+<div id="cactus-popup">
+  <span class="cactus-pop-em">🌵</span>
+  <div class="cactus-pop-bubble">
+    <div class="cactus-pop-hmm">...Hmmm</div>
+    <div class="cactus-pop-sub">The air feels heavy tonight...</div>
+  </div>
+</div>
+
+<!-- PAUSE MENU -->
+<div id="pause-overlay">
+  <div class="pause-card">
+    <div class="pause-title">⏸ Paused</div>
+    <div class="pause-sub" id="pause-sub">Valley Farm</div>
+    <div class="pause-row">
+      <div><div class="pause-label">🌙 Dark Mode</div><div class="pause-desc">Easier on the eyes</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-dark" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🎮 Retro Theme</div><div class="pause-desc">Pixel-art style</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-retro" onchange="toggleRetro(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🔔 Notifications</div><div class="pause-desc">Show popup messages</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-toasts" checked onchange="S.toasts=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🔊 Sounds</div><div class="pause-desc">Web Audio sound effects</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-sounds" checked onchange="S.sounds=this.checked;saveS()"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">⚡ Energy Cost</div><div class="pause-desc">Actions use energy</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-energy" checked onchange="S.energyCost=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🌧️ Random Weather</div><div class="pause-desc">Rain auto-waters crops</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-weather" checked onchange="S.weather=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-btn-row">
+      <button class="pause-action" onclick="closePause()">▶ Resume</button>
+      <button class="pause-action" onclick="saveAll();toast('Saved! 💾','success');closePause()">💾 Save</button>
+      <button class="pause-action danger" onclick="doLogout()">↩ Sign Out</button>
+    </div>
+    <div class="pause-io">
+      <button class="pause-io-btn" onclick="exportSave()">📤 Export Save</button>
+      <button class="pause-io-btn" onclick="importSave()">📥 Import Save</button>
+    </div>
+    <button class="pause-close" onclick="closePause()">Continue Farming 🌾</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   CONSTANTS & DATA
+══════════════════════════════════ */
+const GW=14,GH=10;
+const SEASONS=['Spring','Summer','Fall','Winter'];
+const SEASON_COL={Spring:'#16a34a',Summer:'#d97706',Fall:'#c2410c',Winter:'#0369a1'};
+const SEASON_BG={Spring:'#dcfce7',Summer:'#fef9c3',Fall:'#ffedd5',Winter:'#e0f2fe'};
+const GRASS={Spring:'#6dbf67',Summer:'#5aab40',Fall:'#c8973a',Winter:'#93b8c8'};
+const SOIL_N='#a07040',SOIL_W='#5c3820';
+
+const TREES=[
+  [0,0,'🌲'],[0,1,'🌳'],[0,GW-2,'🌳'],[0,GW-1,'🌲'],
+  [GH-1,0,'🌳'],[GH-1,1,'🌲'],[GH-1,GW-2,'🌲'],[GH-1,GW-1,'🌳'],
+  [3,0,'🌴'],[GH-4,0,'🌵'],[3,GW-1,'🌴'],[GH-4,GW-1,'🌵'],
+  [1,0,'🌿'],[GH-2,0,'🌿'],[1,GW-1,'🌿'],[GH-2,GW-1,'🌿'],
+];
+const TMAP=new Map(TREES.map(([r,c,e])=>[r*100+c,e]));
+
+const CROPS={
+  parsnip:    {n:'Parsnip',    e:'🥕',days:4, buy:10,  sell:35,  seasons:['Spring']},
+  carrot:     {n:'Carrot',     e:'🥕',days:3, buy:15,  sell:50,  seasons:['Spring','Fall']},
+  potato:     {n:'Potato',     e:'🥔',days:6, buy:50,  sell:150, seasons:['Spring']},
+  cauliflower:{n:'Cauliflower',e:'🥦',days:12,buy:80,  sell:175, seasons:['Spring']},
+  strawberry: {n:'Strawberry', e:'🍓',days:8, buy:100, sell:300, seasons:['Spring','Summer']},
+  tulip:      {n:'Tulip',      e:'🌷',days:5, buy:30,  sell:90,  seasons:['Spring']},
+  garlic:     {n:'Garlic',     e:'🧄',days:5, buy:40,  sell:100, seasons:['Spring','Fall']},
+  melon:      {n:'Melon',      e:'🍈',days:12,buy:80,  sell:250, seasons:['Summer']},
+  tomato:     {n:'Tomato',     e:'🍅',days:11,buy:50,  sell:180, seasons:['Summer']},
+  corn:       {n:'Corn',       e:'🌽',days:14,buy:150, sell:500, seasons:['Summer','Fall']},
+  sunflower:  {n:'Sunflower',  e:'🌻',days:8, buy:200, sell:350, seasons:['Summer']},
+  pepper:     {n:'Pepper',     e:'🌶',days:9, buy:70,  sell:220, seasons:['Summer']},
+  blueberry:  {n:'Blueberry',  e:'🫐',days:13,buy:80,  sell:125, seasons:['Summer']},
+  eggplant:   {n:'Eggplant',   e:'🍆',days:9, buy:60,  sell:190, seasons:['Summer','Fall']},
+  pumpkin:    {n:'Pumpkin',    e:'🎃',days:13,buy:100, sell:320, seasons:['Fall']},
+  yam:        {n:'Yam',        e:'🍠',days:10,buy:60,  sell:200, seasons:['Fall']},
+  cranberry:  {n:'Cranberry',  e:'🍒',days:7, buy:240, sell:550, seasons:['Fall']},
+  mushroom:   {n:'Mushroom',   e:'🍄',days:6, buy:35,  sell:110, seasons:['Fall']},
+};
+
+const DECOS={
+  path:  {e:'🟫',n:'Stone Path'},
+  fence: {e:'🪵',n:'Fence'},
+  flower:{e:'🌸',n:'Flower Bed'},
+  lamp:  {e:'🏮',n:'Lamp Post'},
+  sign:  {e:'🪧',n:'Sign'},
+  rock:  {e:'🪨',n:'Rock'},
+};
+
+const UPGRADES={
+  sprinkler:{n:'Sprinkler System',e:'🚿',desc:'Auto-waters all tilled soil each morning (replaces rain)',cost:1500,max:1},
+  greenhouse:{n:'Greenhouse',e:'🏡',desc:'Crops survive & grow through Winter — plant in Fall & harvest in Winter!',cost:2200,max:1},
+  barn:{n:'Barn Bonus',e:'🏚',desc:'+15% bonus on all sales. Stacks up to ×2',cost:1000,max:2},
+  well:{n:'Deep Well',e:'🪣',desc:'+50 maximum energy per purchase',cost:800,max:2},
+};
+
+/* Fertility multiplier: bonus harvest chance per tile on this plot */
+const LAND_PLOTS={
+  meadow:{n:'Meadow Plot',e:'🌿',fertility:'Poor',fertMult:0.85,
+    buyPrice:900,rentDay:14,interestRate:0.10,
+    desc:'Modest plains. Affordable first expansion.',col:'#8bc34a',textCol:'#33691e',
+    mapX:'2%',mapY:'5%',mapW:'30%',mapH:'38%'},
+  riverbank:{n:'River Bank',e:'🌊',fertility:'Average',fertMult:1.0,
+    buyPrice:1800,rentDay:28,interestRate:0.10,
+    desc:'Natural irrigation keeps crops moist.',col:'#4fc3f7',textCol:'#01579b',
+    mapX:'68%',mapY:'5%',mapW:'30%',mapH:'38%'},
+  hillfarm:{n:'Hill Farm',e:'⛰️',fertility:'Average',fertMult:1.05,
+    buyPrice:2600,rentDay:40,interestRate:0.12,
+    desc:'Elevated terrain with great sun exposure.',col:'#bcaaa4',textCol:'#4e342e',
+    mapX:'2%',mapY:'56%',mapW:'30%',mapH:'40%'},
+  lowland:{n:'Rich Lowland',e:'🌱',fertility:'Rich',fertMult:1.25,
+    buyPrice:4200,rentDay:65,interestRate:0.12,
+    desc:'Deep nutrient-rich alluvial soil. High yields.',col:'#66bb6a',textCol:'#1b5e20',
+    mapX:'68%',mapY:'56%',mapW:'30%',mapH:'40%'},
+  volcanic:{n:'Volcanic Ridge',e:'🌋',fertility:'Volcanic',fertMult:1.5,
+    buyPrice:7500,rentDay:110,interestRate:0.15,
+    desc:'Mineral-rich volcanic ash. Exceptional harvests.',col:'#ef5350',textCol:'#b71c1c',
+    mapX:'33%',mapY:'72%',mapW:'34%',mapH:'25%'},
+};
+
+const XP_LEVELS=[0,80,200,400,700,1100,1600,2200,3000,4000];
+
+/* ══ SETTINGS ══ */
+let S={dark:false,toasts:true,energyCost:true,weather:true,retro:false,sounds:true};
+function loadS(){try{const s=JSON.parse(localStorage.getItem('vf_s'));if(s)S={...S,...s};}catch(e){}}
+function saveS(){localStorage.setItem('vf_s',JSON.stringify(S));}
+function applyS(){
+  document.body.classList.toggle('dark',S.dark&&!S.retro);
+  document.body.classList.toggle('retro',S.retro);
+  document.getElementById('tog-dark').checked=S.dark;
+  document.getElementById('tog-toasts').checked=S.toasts;
+  document.getElementById('tog-sounds').checked=!!S.sounds;
+  document.getElementById('tog-energy').checked=S.energyCost;
+  document.getElementById('tog-weather').checked=S.weather;
+  document.getElementById('tog-retro').checked=S.retro;
+}
+function toggleDark(on){S.dark=on;if(on&&S.retro){S.retro=false;document.getElementById('tog-retro').checked=false;}document.body.classList.toggle('dark',on);document.body.classList.toggle('retro',false);saveS();}
+function toggleRetro(on){S.retro=on;if(on&&S.dark){S.dark=false;document.getElementById('tog-dark').checked=false;document.body.classList.remove('dark');}document.body.classList.toggle('retro',on);saveS();}
+
+/* ══ SOUND SYSTEM (Web Audio API) ══ */
+let audioCtx=null;
+function snd(type){
+  if(!S.sounds)return;
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const c=audioCtx,t=c.currentTime;
+    const b=(f,d,w='sine',v=0.12,dl=0)=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.type=w;o.frequency.setValueAtTime(f,t+dl);
+      g.gain.setValueAtTime(v,t+dl);
+      g.gain.exponentialRampToValueAtTime(0.001,t+dl+d);
+      o.start(t+dl);o.stop(t+dl+d+0.06);
+    };
+    ({
+      till:()=>{b(180,0.11,'triangle',0.18);b(110,0.09,'triangle',0.14,0.06);},
+      water:()=>{b(660,0.07,'sine',0.09);b(440,0.12,'sine',0.07,0.07);b(330,0.16,'sine',0.05,0.16);},
+      harvest:()=>{[440,554,659,880].forEach((f,i)=>b(f,0.18,'sine',0.1,i*0.07));},
+      coin:()=>{b(880,0.05,'sine',0.13);b(1108,0.12,'sine',0.11,0.05);},
+      buy:()=>{b(660,0.08,'sine',0.12);b(880,0.14,'sine',0.10,0.07);},
+      error:()=>{b(110,0.18,'sawtooth',0.1);},
+      sleep:()=>{[261,330,392,523].forEach((f,i)=>b(f,0.6,'sine',0.07,i*0.09));},
+      levelup:()=>{[440,550,660,880,1100].forEach((f,i)=>b(f,0.2,'sine',0.13,i*0.07));},
+      place:()=>{b(440,0.09,'triangle',0.1);},
+      ship:()=>{b(550,0.06,'sine',0.12);b(770,0.12,'sine',0.10,0.06);b(990,0.18,'sine',0.08,0.12);},
+    }[type]||(() => {}))();
+  }catch(e){}
+}
+
+/* ══ AUTH ══ */
+let CU=null,authMode='login';
+function getUsers(){return JSON.parse(localStorage.getItem('vf_u')||'{}')}
+function setUsers(u){localStorage.setItem('vf_u',JSON.stringify(u))}
+function getSaves(){return JSON.parse(localStorage.getItem('vf_sv')||'{}')}
+function setSaves(s){localStorage.setItem('vf_sv',JSON.stringify(s))}
+
+function saveAll(){
+  if(!CU)return;
+  const sv=getSaves();sv[CU]={...G,_ts:Date.now()};setSaves(sv);saveS();
+}
+
+function switchAuthTab(mode){
+  authMode=mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',['login','signup'][i]===mode));
+  document.getElementById('auth-submit-btn').textContent=mode==='signup'?'Create Farm':'Sign In';
+  document.getElementById('auth-error').style.display='none';
+  renderSaved();
+}
+
+function renderSaved(){
+  const saves=Object.entries(getSaves());
+  const el=document.getElementById('saved-list');
+  if(authMode==='login'&&saves.length){
+    el.innerHTML='<div class="saved-title">Quick Load</div>'+saves.map(([nm,d])=>
+      `<div class="saved-entry" onclick="quickLoad('${nm}')">
+        <div><div class="saved-entry-name">🧑‍🌾 ${nm}</div><div class="saved-entry-info">Day ${d.day||1} · Yr.${d.year||1} · ${d.gold||0}g</div></div>
+        <span class="saved-entry-del" onclick="event.stopPropagation();delSave('${nm}')">✕</span>
+      </div>`).join('');
+  } else el.innerHTML='';
+}
+
+function delSave(nm){const s=getSaves();delete s[nm];setSaves(s);renderSaved();}
+function quickLoad(nm){document.getElementById('auth-name').value=nm;document.getElementById('auth-pass').value='';authSubmit();}
+
+function authSubmit(){
+  const nm=document.getElementById('auth-name').value.trim();
+  const pw=document.getElementById('auth-pass').value;
+  const err=document.getElementById('auth-error');
+  err.style.display='none';
+  if(!nm){err.textContent='Enter a farmer name!';err.style.display='block';return;}
+  const users=getUsers();
+  if(authMode==='signup'){
+    if(pw.length<4){err.textContent='Password must be 4+ characters.';err.style.display='block';return;}
+    if(users[nm]){err.textContent='Name taken! Try signing in.';err.style.display='block';return;}
+    users[nm]=pw;setUsers(users);CU=nm;initState();saveAll();
+  } else {
+    if(!users[nm]){users[nm]=pw||'farm';setUsers(users);}
+    else if(users[nm]!==pw&&pw){err.textContent='Wrong password!';err.style.display='block';return;}
+    CU=nm;
+    const sv=getSaves()[nm];
+    sv?loadState(sv):initState();
+  }
+  launchGame();
+}
+
+function doLogout(){
+  saveAll();closePause();
+  clearInterval(clockInt);clearInterval(asInt);
+  CU=null;
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('auth-name').value='';
+  document.getElementById('auth-pass').value='';
+  authMode='login';
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('auth-submit-btn').textContent='Sign In';
+  renderSaved();
+}
+
+/* ══ STATE ══ */
+let G={};
+let clockInt=null,asInt=null,paused=false,currentTab='inv';
+
+function mkFarm(){
+  return Array.from({length:GH},()=>Array.from({length:GW},()=>({tilled:false,watered:false,crop:null,idleDays:0,deco:null})));
+}
+function initState(){
+  G={day:1,si:0,year:1,weather:'sunny',time:360,gold:500,energy:100,
+     farm:mkFarm(),inv:{parsnip:5,carrot:3},bag:{},pending:0,
+     tool:'hoe',seed:'parsnip',deco:'path',
+     stats:{crops:0,earned:0,days:0},
+     yearEarned:0,achievements:[],market:{prices:{},history:{}},
+     skills:{farming:{xp:0},watering:{xp:0},harvesting:{xp:0}},
+     upgrades:{},lands:{},cactusRain:false};
+}
+function loadState(s){
+  G=s;
+  if(!G.stats)G.stats={crops:0,earned:0,days:0};
+  if(!G.achievements)G.achievements=[];
+  if(G.yearEarned===undefined)G.yearEarned=0;
+  if(!G.market)G.market={prices:{},history:{}};
+  if(!G.skills)G.skills={farming:{xp:0},watering:{xp:0},harvesting:{xp:0}};
+  if(!G.skills.farming)G.skills.farming={xp:0};
+  if(!G.skills.watering)G.skills.watering={xp:0};
+  if(!G.skills.harvesting)G.skills.harvesting={xp:0};
+  if(!G.upgrades)G.upgrades={};
+  if(!G.lands)G.lands={};
+  if(G.cactusRain===undefined)G.cactusRain=false;
+  if(G.deco===undefined)G.deco='path';
+  G.farm=G.farm.map(row=>row.map(t=>({deco:null,idleDays:0,...t})));
+}
+
+/* ══ HELPERS ══ */
+function season(){return SEASONS[G.si];}
+function sCrops(){return Object.entries(CROPS).filter(([,c])=>c.seasons.includes(season()));}
+function fmtTime(t){const h=Math.floor(t/60)%24,m=t%60,ap=h>=12?'PM':'AM';const h12=h===0?12:h>12?h-12:h;return`${h12}:${String(m).padStart(2,'0')} ${ap}`;}
+function cropStage(c){if(!c)return -1;const d=CROPS[c.type].days;if(c.days>=d)return 3;if(c.days>=Math.ceil(d*0.66))return 2;if(c.days>=Math.ceil(d*0.33))return 1;return 0;}
+function dnIcon(t){if(t<420)return'🌅';if(t<780)return'☀️';if(t<1020)return'🌤️';if(t<1140)return'🌆';return'🌙';}
+function maxEnergy(){return 100+(G.upgrades?.well||0)*50;}
+function barnMult(){return 1+(G.upgrades?.barn||0)*0.15;}
+// Seed prices inflate slightly each year (~4% per year)
+function seedBuyPrice(type){return Math.round(CROPS[type].buy*(1+(G.year-1)*0.04));}
+function getLevel(xp){let lv=1;for(let i=1;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i])lv=i+1;else break;}return Math.min(10,lv);}
+function getXPPct(xp){const lv=getLevel(xp);if(lv>=10)return 100;return Math.round(((xp-XP_LEVELS[lv-1])/(XP_LEVELS[lv]-XP_LEVELS[lv-1]))*100);}
+
+/* ══ HARVEST ALL ══ */
+function allCropsReady(){
+  let hasCrop=false,allReady=true;
+  for(let r=0;r<GH;r++)for(let c=0;c<GW;c++){const cr=G.farm[r][c].crop;if(cr){hasCrop=true;if(cropStage(cr)!==3)allReady=false;}}
+  return hasCrop&&allReady;
+}
+function scytheAll(){
+  if(!allCropsReady()){toast('Not all crops are ready yet!','warn');return;}
+  const hLv=getLevel(G.skills?.harvesting?.xp||0);
+  const bonusChance=hLv>=10?0.25:hLv>=5?0.15:0;
+  let total=0;
+  G.farm=G.farm.map(row=>row.map(tile=>{
+    if(!tile.crop||cropStage(tile.crop)!==3)return tile;
+    let qty=1;
+    if(bonusChance>0&&Math.random()<bonusChance)qty=2;
+    G.bag[tile.crop.type]=(G.bag[tile.crop.type]||0)+qty;
+    total+=qty;G.stats.crops+=qty;
+    addXP('harvesting',10);
+    if(S.energyCost)G.energy=Math.max(0,G.energy-1);
+    return{...tile,crop:null,watered:false,idleDays:0};
+  }));
+  snd('harvest');
+  toast('🌾 Harvested all '+total+' crops!','success',3200);
+  render();
+}
+
+/* ══ TOOL VISUAL EFFECT ══ */
+function spawnTileEffect(r,c,emoji){
+  const grid=document.getElementById('farm-grid');
+  const idx=r*GW+c;
+  const el=grid.children[idx];
+  if(!el)return;
+  const rect=el.getBoundingClientRect();
+  const fx=document.createElement('div');
+  fx.className='tile-effect';fx.textContent=emoji;
+  fx.style.left=(rect.left+rect.width/2-12)+'px';
+  fx.style.top=(rect.top+rect.height/2-12)+'px';
+  document.body.appendChild(fx);
+  setTimeout(()=>fx.remove(),700);
+}
+
+/* ══ XP SYSTEM ══ */
+function addXP(skill,amount){
+  if(!G.skills[skill])G.skills[skill]={xp:0};
+  const sk=G.skills[skill];
+  const prevLv=getLevel(sk.xp);
+  sk.xp+=amount;
+  const newLv=getLevel(sk.xp);
+  if(newLv>prevLv){
+    snd('levelup');
+    const names={farming:'Farming',watering:'Watering',harvesting:'Harvesting'};
+    const bonuses={
+      farming:{5:'Tilling costs 0 energy!',10:'Tilled tiles auto-water!'},
+      watering:{5:'Watering costs 0 energy!',10:'Double water power!'},
+      harvesting:{5:'+15% double harvest chance!',10:'+25% double harvest chance!'},
+    };
+    const bonus=bonuses[skill]?.[newLv]||'';
+    setTimeout(()=>showAchievement('⭐',`${names[skill]} Lv.${newLv}!`,bonus||`${names[skill]} skill up!`),800);
+    toast(`⭐ ${names[skill]} Level ${newLv}!`,'success',3000);
+  }
+}
+
+/* ══ TOAST ══ */
+let tid=0;
+function toast(msg,type,dur){
+  type=type||'info';dur=dur||2600;
+  if(!S.toasts&&type!=='success')return;
+  const id=++tid,el=document.createElement('div');
+  el.className='toast t-'+type;el.id='t'+id;el.textContent=msg;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>{el.classList.add('toast-out');setTimeout(()=>el.remove(),220);},dur);
+}
+
+/* ══ RENDER HUD ══ */
+function renderHUD(){
+  const s=season();
+  document.getElementById('hud-day').textContent='Day '+G.day;
+  document.getElementById('hud-season').textContent=s;
+  const sp=document.getElementById('season-pill');
+  sp.style.background=S.retro?'transparent':SEASON_BG[s];
+  sp.style.borderColor=S.retro?'transparent':SEASON_COL[s]+'55';
+  sp.style.color=S.retro?'#f5deb3':SEASON_COL[s];
+  document.getElementById('hud-year').textContent='Yr.'+G.year;
+  const rainy=G.weather==='rainy';
+  document.getElementById('weather-em').textContent=rainy?'🌧️':'☀️';
+  document.getElementById('hud-weather').textContent=rainy?'Rainy':'Sunny';
+  document.getElementById('hud-time').textContent=fmtTime(G.time);
+  document.getElementById('dn-icon').textContent=dnIcon(G.time);
+  const tPct=Math.min(100,((G.time-360)/(1320-360))*100);
+  const tb=document.getElementById('time-bar');
+  tb.style.width=tPct+'%';tb.style.background=tPct>80?'#ef4444':'#f59e0b';
+  const eb=document.getElementById('energy-bar');
+  eb.style.width=(G.energy/maxEnergy()*100)+'%';
+  eb.style.background=G.energy>maxEnergy()*0.5?'#22c55e':G.energy>maxEnergy()*0.25?'#f59e0b':'#ef4444';
+  document.getElementById('hud-energy').textContent=G.energy;
+  document.getElementById('hud-gold').textContent=G.gold+'g';
+  document.getElementById('hud-pending').textContent=G.pending>0?'(+'+G.pending+'g tmrw)':'';
+}
+
+/* ══ RENDER FARM ══ */
+function renderFarm(){
+  const grid=document.getElementById('farm-grid');
+  grid.style.gridTemplateColumns=`repeat(${GW},52px)`;
+  grid.style.gridTemplateRows=`repeat(${GH},52px)`;
+  const gc=GRASS[season()];
+  grid.innerHTML='';
+
+  for(let r=0;r<GH;r++){
+    for(let c=0;c<GW;c++){
+      const tkey=r*100+c;
+      if(TMAP.has(tkey)){
+        const div=document.createElement('div');
+        div.className='tile-tree';div.style.background=gc;
+        let em=TMAP.get(tkey);
+        const s=season();
+        if(s==='Fall'&&(em==='🌳'||em==='🌲'))em='🍂';
+        else if(s==='Winter'&&em==='🌳')em='🪨';
+        else if(s==='Winter'&&em==='🌲')em='❄️';
+        div.textContent=em;
+        if(em==='🌵'){div.classList.add('tile-cactus');div.addEventListener('click',cactusClick);}
+        grid.appendChild(div);continue;
+      }
+
+      const tile=G.farm[r][c];
+      const div=document.createElement('div');
+      div.className='tile';
+
+      if(tile.tilled){
+        div.style.background=tile.watered?SOIL_W:SOIL_N;
+        div.style.borderColor='rgba(0,0,0,0.20)';
+        if(!tile.crop&&(tile.idleDays||0)>=1)div.classList.add('tile-idle');
+      } else if(tile.deco){
+        div.style.background=gc;
+        // Slightly dim path tiles
+        if(tile.deco==='path')div.style.background='#b8a890';
+        const decoEl=document.createElement('span');
+        decoEl.className='tile-deco';
+        decoEl.textContent=DECOS[tile.deco]?.e||'';
+        div.appendChild(decoEl);
+      } else {
+        div.style.background=gc;
+      }
+
+      if(!tile.tilled&&!tile.deco){
+        const g2=document.createElement('span');g2.className='grass-deco';g2.textContent='🌾';div.appendChild(g2);
+      }
+
+      const st=cropStage(tile.crop);
+      const ready=st===3;
+      if(ready)div.classList.add('tile-ready');
+      if(tile.crop)div.classList.add('tile-s'+st);
+
+      if(tile.crop){
+        const ci=document.createElement('span');ci.className='crop-em';
+        ci.textContent=['🌱','🌿','🪴',CROPS[tile.crop.type].e][st];
+        div.appendChild(ci);
+        if(ready){
+          const sp=document.createElement('span');sp.className='sparkle';sp.textContent='✨';div.appendChild(sp);
+        } else {
+          const db=document.createElement('span');db.className='days-badge';
+          db.textContent=(CROPS[tile.crop.type].days-tile.crop.days)+'d';div.appendChild(db);
+        }
+      }
+      if(tile.watered&&!tile.crop){const wd=document.createElement('div');wd.className='water-dot';div.appendChild(wd);}
+      div.addEventListener('click',()=>clickTile(r,c));
+      grid.appendChild(div);
+    }
+  }
+}
+
+/* ══ RENDER SIDE ══ */
+function renderSide(){
+  let html;
+  if(currentTab==='inv')html=buildInv();
+  else if(currentTab==='shop')html=buildShop();
+  else if(currentTab==='map')html=buildMap();
+  else html=buildUpgrades();
+
+  ['side-content','sheet-content'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML=html;
+    el.querySelectorAll('[data-sell]').forEach(b=>b.addEventListener('click',shipAll));
+    el.querySelectorAll('[data-buy]').forEach(b=>b.addEventListener('click',()=>buySeed(b.dataset.buy,+b.dataset.qty)));
+    el.querySelectorAll('[data-upgrade]').forEach(b=>b.addEventListener('click',()=>buyUpgrade(b.dataset.upgrade)));
+    el.querySelectorAll('[data-auction]').forEach(b=>b.addEventListener('click',()=>auctionSell(b.dataset.auction,+b.dataset.qty)));
+    el.querySelectorAll('[data-buy-land]').forEach(b=>b.addEventListener('click',()=>buyLand(b.dataset.buyLand)));
+    el.querySelectorAll('[data-rent-land]').forEach(b=>b.addEventListener('click',()=>rentLand(b.dataset.rentLand)));
+    el.querySelectorAll('[data-leave-land]').forEach(b=>b.addEventListener('click',()=>leaveLand(b.dataset.leaveLand)));
+  });
+}
+
+/* ══ BUILD INVENTORY ══ */
+function buildSkillSection(){
+  const skillMeta={
+    farming:{e:'⛏',n:'Farming',col:'#a16207'},
+    watering:{e:'💧',n:'Watering',col:'#2563eb'},
+    harvesting:{e:'🌾',n:'Harvesting',col:'#16a34a'},
+  };
+  const bonuses={
+    farming:{5:'Tilling costs 0 energy',10:'Tilled tiles auto-water'},
+    watering:{5:'Watering costs 0 energy',10:'Watering costs 0 energy'},
+    harvesting:{5:'+15% double harvest',10:'+25% double harvest'},
+  };
+  let h='<div class="s-sec">⭐ Skills</div>';
+  Object.entries(skillMeta).forEach(([key,meta])=>{
+    const sk=G.skills?.[key]||{xp:0};
+    const lv=getLevel(sk.xp);
+    const pct=getXPPct(sk.xp);
+    const bonus=bonuses[key]?.[lv];
+    h+=`<div class="skill-item">
+      <div class="skill-header">
+        <span class="skill-name">${meta.e} ${meta.n}</span>
+        <span class="skill-level">Lv.${lv}${lv>=10?'★':''}</span>
+      </div>
+      <div class="skill-bar-outer"><div class="skill-bar-inner" style="width:${pct}%;background:${meta.col}"></div></div>
+      ${bonus?`<span class="skill-bonus-tag">✓ ${bonus}</span>`:''}
+    </div>`;
+  });
+  return h;
+}
+
+function buildInv(){
+  const isWinter=season()==='Winter';
+  const m=ensureMarket();
+  const seeds=Object.entries(G.inv).filter(([,q])=>q>0);
+  const bag=Object.entries(G.bag).filter(([,q])=>q>0);
+  const hasBarn=(G.upgrades?.barn||0)>0;
+  const barnTag=hasBarn?`<span class="barn-bonus-tag">🏚+${Math.round((barnMult()-1)*100)}%</span>`:'';
+
+  const getVal=(t,q)=>{
+    const basePrice=isWinter?(m.prices[t]||CROPS[t].sell):CROPS[t].sell;
+    return Math.round(basePrice*q*barnMult());
+  };
+  const total=bag.reduce((s,[t,q])=>s+getVal(t,q),0);
+
+  let h='<div class="s-sec">🌱 Seeds</div>';
+  if(!seeds.length)h+='<p class="empty-msg">No seeds.<br>Visit the shop!</p>';
+  seeds.forEach(([t,q])=>{h+=`<div class="inv-row"><span>${CROPS[t].e} ${CROPS[t].n}</span><span class="inv-qty">×${q}</span></div>`;});
+  h+='<div class="s-sec">🧺 Harvested</div>';
+  if(!bag.length)h+='<p class="empty-msg">Harvest ready crops<br>with the scythe!</p>';
+  if(isWinter){
+    bag.forEach(([t,q])=>{
+      const mktPrice=m.prices[t]||CROPS[t].sell;
+      const val=Math.round(mktPrice*q*barnMult());
+      h+=`<div class="inv-row"><span>${CROPS[t].e} ${CROPS[t].n}</span><span class="inv-val">×${q} · ${val}g ❄️</span></div>`;
+    });
+    if(bag.length){
+      h+=`<div class="winter-bag-note" onclick="setTab('shop')">❄️ <b>Winter Auction Active!</b><br>Go to <b>Market tab</b> to sell at live prices<br>Total value: <b>~${total}g</b>${barnTag}</div>`;
+    }
+  } else {
+    bag.forEach(([t,q])=>{
+      const val=getVal(t,q);
+      h+=`<div class="inv-row"><span>${CROPS[t].e} ${CROPS[t].n}</span><span class="inv-val">×${q} · ${val}g${barnTag}</span></div>`;
+    });
+    if(bag.length)h+=`<button class="ship-btn" data-sell="1">📦 Ship All · ${total}g${barnTag}</button>`;
+  }
+  if(G.pending>0)h+=`<div class="pending-box">📮 Shipping<br><b>${G.pending}g</b> arrives tomorrow</div>`;
+  h+=buildSkillSection();
+  h+=`<div class="stats-box"><b>📊 Stats</b><br>🌾 Harvested: ${G.stats.crops}<br>💰 Earned: ${G.stats.earned}g<br>📅 Days: ${G.stats.days}<br>📆 Year: ${G.year}</div>`;
+  return h;
+}
+
+/* ══ BUILD SHOP ══ */
+function buildShop(){
+  const s=season();
+  if(s==='Winter')return buildWinterMarket();
+  const yearNote=G.year>1?`<div class="market-header">Year ${G.year} prices · Seeds cost ~${Math.round((G.year-1)*4)}% more than Year 1</div>`:'';
+  let h=`<div class="s-sec">🌞 ${s} Seeds</div>${yearNote}`;
+  sCrops().forEach(([type,crop])=>{
+    const bp=seedBuyPrice(type);
+    const c5=bp*5,c10=bp*10,hv=G.inv[type]||0;
+    h+=`<div class="shop-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+        <span class="shop-name">${crop.e} ${crop.n}</span><span class="shop-price">${bp}g</span>
+      </div>
+      <div class="shop-meta">⏱ ${crop.days}d · sells ${crop.sell}g · have: ${hv}</div>
+      <div class="shop-row">
+        <button class="buy-btn" data-buy="${type}" data-qty="5" ${G.gold<c5?'disabled':''}>×5 (${c5}g)</button>
+        <button class="buy-btn" data-buy="${type}" data-qty="10" ${G.gold<c10?'disabled':''}>×10 (${c10}g)</button>
+      </div></div>`;
+  });
+  return h;
+}
+
+/* ══ BUILD WINTER MARKET (AUCTION) ══ */
+function ensureMarket(){
+  if(!G.market)G.market={prices:{},history:{}};
+  return G.market;
+}
+
+function tickMarket(){
+  const m=ensureMarket();
+  const yearMult=1+(G.year-1)*0.06;
+  Object.entries(CROPS).forEach(([type,crop])=>{
+    const base=crop.sell*yearMult;
+    const prev=m.prices[type]||base;
+    const revert=(base-prev)*0.12;
+    const noise=(Math.random()-0.47)*0.28*prev;
+    const newPrice=Math.round(Math.max(Math.floor(base*0.35),Math.min(Math.ceil(base*2.4),prev+revert+noise)));
+    if(!m.history[type])m.history[type]=[];
+    m.history[type].push(newPrice);
+    if(m.history[type].length>6)m.history[type].shift();
+    m.prices[type]=newPrice;
+  });
+}
+
+function sparkline(hist){
+  if(!hist||hist.length<2)return'';
+  const min=Math.min(...hist),max=Math.max(...hist),range=max-min||1;
+  return hist.map((v,i)=>{
+    const h=Math.round(((v-min)/range)*13)+3;
+    const isLast=i===hist.length-1;
+    const col=isLast?(v>=(hist[i-1]||v)?'#22c55e':'#ef4444'):'#d1d5db';
+    return`<div style="width:4px;height:${h}px;background:${col};border-radius:1px;display:inline-block;margin:0 1px;vertical-align:bottom"></div>`;
+  }).join('');
+}
+
+function buildWinterMarket(){
+  const m=ensureMarket();
+  const hasBag=Object.entries(G.bag).some(([,q])=>q>0);
+  const yearMult=1+(G.year-1)*0.06;
+  const marketDir=G.year>1?(yearMult>1.1?'bull':'bear'):'bull';
+  const hasBarn=(G.upgrades?.barn||0)>0;
+
+  // Total value if selling everything
+  const bagTotal=Object.entries(G.bag).reduce((s,[t,q])=>s+Math.round((m.prices[t]||CROPS[t].sell)*q*barnMult()),0);
+
+  let h=`<div class="s-sec">❄️ Winter Auction <span class="market-yr-badge ${marketDir}">${marketDir==='bull'?'📈 Bull':'📉 Bear'} Yr.${G.year}</span></div>`;
+  h+=`<div class="market-header">Prices shift every day · Best crops command premium · ${hasBarn?`🏚 Barn +${Math.round((barnMult()-1)*100)}% active`:'Buy Barn upgrade for sales bonus!'}</div>`;
+
+  if(hasBag){
+    h+=`<button class="mkt-sell-all" onclick="sellAllAtAuction()">💰 Sell Everything · ${bagTotal}g</button>`;
+  }
+
+  const sorted=Object.entries(CROPS).sort(([ta],[tb])=>{
+    const aHas=(G.bag[ta]||0)>0,bHas=(G.bag[tb]||0)>0;
+    if(aHas&&!bHas)return -1;if(!aHas&&bHas)return 1;return 0;
+  });
+
+  sorted.forEach(([type,crop])=>{
+    const price=m.prices[type]||Math.round(crop.sell*yearMult);
+    const hist=m.history[type]||[price];
+    const prev=hist.length>1?hist[hist.length-2]:crop.sell;
+    const diff=price-prev;
+    const pct=prev>0?Math.round(Math.abs(diff/prev)*100):0;
+    const up=diff>=0;
+    const trendCol=up?'#22c55e':'#ef4444';
+    const trendSym=up?'▲':'▼';
+    const qty=G.bag[type]||0;
+    const hasIt=qty>0;
+    const sellPrice1=Math.round(price*barnMult());
+    const sellPriceAll=Math.round(price*qty*barnMult());
+
+    h+=`<div class="market-row${hasIt?' market-row-has':''}">
+      <div class="market-top">
+        <div class="market-left">
+          <span class="market-em">${crop.e}</span>
+          <div>
+            <div class="market-name">${crop.n}</div>
+            ${hasIt
+              ?`<div class="market-qty">In bag: ×${qty}</div>`
+              :`<div class="market-qty" style="color:var(--text-soft);font-size:9px">base: ${crop.sell}g</div>`
+            }
+          </div>
+        </div>
+        <div class="market-price-block">
+          <div class="market-mini">${sparkline(hist)}</div>
+          <div class="market-price">${price}g</div>
+          <div class="market-trend" style="color:${trendCol}">${trendSym}${pct}%</div>
+        </div>
+      </div>
+      ${hasIt?`<div class="market-sell-row">
+        <button class="sell-mkt-btn" data-auction="${type}" data-qty="1">×1 · ${sellPrice1}g</button>
+        ${qty>1?`<button class="sell-mkt-btn sell-all" data-auction="${type}" data-qty="${qty}">×${qty} All · ${sellPriceAll}g</button>`:''}
+      </div>`:''}
+    </div>`;
+  });
+
+  if(!hasBag){
+    h+=`<div class="market-note">💡 You have no crops to sell.<br>Stock up in Fall before Winter arrives!<br><br>Watch the prices — plan your harvest timing!</div>`;
+  }
+  return h;
+}
+
+/* ══ BUILD UPGRADES ══ */
+function buildUpgrades(){
+  let h=`<div class="s-sec">⚒ Farm Upgrades</div>`;
+  h+=`<div class="market-header">Permanent improvements to your farm · Upgrades persist across all seasons!</div>`;
+  Object.entries(UPGRADES).forEach(([id,upg])=>{
+    const owned=G.upgrades?.[id]||0;
+    const maxed=owned>=upg.max;
+    const canBuy=G.gold>=upg.cost&&!maxed;
+    const stackNote=upg.max>1?` (${owned}/${upg.max} owned)`:'';
+    h+=`<div class="upg-card">
+      <div class="upg-header">
+        <span class="upg-name">${upg.e} ${upg.n}</span>
+        <span class="upg-cost">${maxed?'MAXED':upg.cost+'g'}</span>
+      </div>
+      <div class="upg-desc">${upg.desc}</div>
+      ${owned>0?`<span class="upg-owned-tag">✓ Active${stackNote}</span>`:''}
+      <button class="upg-buy-btn" data-upgrade="${id}" ${canBuy?'':'disabled'}>
+        ${maxed?'✓ Fully Upgraded':canBuy?`Buy · ${upg.cost}g`:`Need ${upg.cost}g`}
+      </button>
+    </div>`;
+  });
+  h+=`<div class="market-note" style="margin-top:4px">💡 <b>Tips:</b><br>Sprinkler frees up time but doesn't stack rain.<br>Greenhouse lets Fall crops finish in Winter.<br>Barn bonus stacks (×2 max = +30% total).<br>Well upgrades stack for up to 200 max energy!</div>`;
+  return h;
+}
+
+/* ══ AUCTION / SHIP ══ */
+function auctionSell(type,qty){
+  const m=ensureMarket();
+  const have=G.bag[type]||0;
+  qty=Math.min(qty,have);
+  if(qty<=0){toast('Nothing to sell!','warn');snd('error');return;}
+  const price=m.prices[type]||CROPS[type].sell;
+  const total=Math.round(price*qty*barnMult());
+  G.bag[type]=(G.bag[type]||0)-qty;
+  if(G.bag[type]<=0)delete G.bag[type];
+  G.gold+=total;
+  G.stats.earned+=total;
+  G.yearEarned=(G.yearEarned||0)+total;
+  checkAchievements();
+  snd('coin');
+  toast('Sold ×'+qty+' '+CROPS[type].n+' for '+total+'g! 💰','success');
+  render();
+}
+
+function sellAllAtAuction(){
+  const m=ensureMarket();
+  const entries=Object.entries(G.bag).filter(([,q])=>q>0);
+  if(!entries.length){toast('Nothing to sell!','error');snd('error');return;}
+  let total=0;
+  entries.forEach(([type,qty])=>{
+    const price=m.prices[type]||CROPS[type].sell;
+    const earned=Math.round(price*qty*barnMult());
+    total+=earned;
+    G.stats.earned+=earned;
+    G.yearEarned=(G.yearEarned||0)+earned;
+  });
+  G.bag={};G.gold+=total;
+  checkAchievements();
+  snd('coin');
+  toast('Auction sold everything for '+total+'g! 💰','success',3200);
+  render();
+}
+
+function shipAll(){
+  if(season()==='Winter'){toast('❄️ Use the Market tab to sell in Winter!','warn');return;}
+  const ent=Object.entries(G.bag).filter(([,q])=>q>0);
+  if(!ent.length){toast('Nothing to ship!','error');return;}
+  let total=0;ent.forEach(([t,q])=>{total+=Math.round(CROPS[t].sell*q*barnMult());});
+  G.bag={};G.pending+=total;G.stats.earned+=total;
+  snd('ship');
+  toast('📦 Shipped '+total+'g — arrives tomorrow!','success');render();
+}
+
+function buySeed(type,qty){
+  const cr=CROPS[type],cost=seedBuyPrice(type)*qty;
+  if(G.gold<cost){toast('Need '+cost+'g! 💸','error');snd('error');return;}
+  G.gold-=cost;G.inv[type]=(G.inv[type]||0)+qty;
+  snd('buy');
+  toast('Bought ×'+qty+' '+cr.n+'!','success');render();
+}
+
+function buyUpgrade(id){
+  const upg=UPGRADES[id];
+  if(!upg)return;
+  const owned=G.upgrades?.[id]||0;
+  if(owned>=upg.max){toast('Already maxed out!','warn');return;}
+  if(G.gold<upg.cost){toast('Need '+upg.cost+'g! 💸','error');snd('error');return;}
+  G.gold-=upg.cost;
+  if(!G.upgrades)G.upgrades={};
+  G.upgrades[id]=(G.upgrades[id]||0)+1;
+  snd('buy');
+  toast(upg.e+' '+upg.n+' purchased!','success',3000);
+  // Show special effect info
+  const msgs={
+    sprinkler:'🚿 Your crops will be auto-watered each morning!',
+    greenhouse:'🏡 Crops can now survive through Winter!',
+    barn:'🏚 All sales now earn +15% bonus!',
+    well:'🪣 Max energy increased to '+maxEnergy()+'!',
+  };
+  if(msgs[id])setTimeout(()=>toast(msgs[id],'info',3500),1200);
+  render();
+}
+
+/* ══ BUILD MAP ══ */
+function buildMap(){
+  const owned=G.lands||{};
+  const totalRentPerDay=Object.entries(owned).reduce((s,[id,l])=>{
+    if(l.rented&&!l.owned){const p=LAND_PLOTS[id];return s+(p?Math.round(p.rentDay*(1+(l.interestAccrued||0))):0);}
+    return s;
+  },0);
+
+  // Visual map
+  let mapHtml=`<div class="map-visual" style="position:relative;width:100%;min-height:170px;background:linear-gradient(135deg,#2d6a4f 0%,#40916c 50%,#1b4332 100%);border-radius:12px;overflow:hidden;border:2px solid var(--ui-border);margin-bottom:10px">`;
+  // Starter farm (center)
+  mapHtml+=`<div style="position:absolute;left:33%;top:5%;width:35%;height:65%;background:linear-gradient(135deg,#6dbf67,#5aab40);border-radius:8px;border:2px solid #22c55e;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(34,197,94,.4)">
+    <span style="font-size:18px">🏡</span>
+    <span style="font-size:6px;font-weight:800;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.7);text-align:center;margin-top:2px;line-height:1.4">Your Farm<br><span style="opacity:.8;font-size:5px">Starter Plot</span></span>
+  </div>`;
+  // Land plots
+  Object.entries(LAND_PLOTS).forEach(([id,plot])=>{
+    const land=owned[id];
+    const isOwned=land?.owned;
+    const isRented=land?.rented&&!land?.owned;
+    const ring=isOwned?'box-shadow:0 0 0 3px #22c55e,0 0 0 5px rgba(34,197,94,.3)':isRented?'box-shadow:0 0 0 3px #f59e0b,0 0 0 5px rgba(245,158,11,.3)':'';
+    const statusLbl=isOwned?'✓ Owned':isRented?'⏳ Rented':'For Sale';
+    mapHtml+=`<div style="position:absolute;left:${plot.mapX};top:${plot.mapY};width:${plot.mapW};height:${plot.mapH};background:${plot.col};border-radius:6px;border:2px solid rgba(0,0,0,.18);${ring};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer" onclick="setTab('map')" title="${plot.n}">
+      <span style="font-size:14px;line-height:1">${plot.e}</span>
+      <span style="font-size:5.5px;font-weight:800;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.7);text-align:center;margin-top:2px;line-height:1.4">${plot.n.split(' ')[0]}<br><span style="opacity:.85">${statusLbl}</span></span>
+    </div>`;
+  });
+  // Map key
+  mapHtml+=`<div style="position:absolute;bottom:6px;left:6px;display:flex;gap:5px;align-items:center">
+    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;border:1px solid rgba(255,255,255,.4)"></span><span style="font-size:5.5px;font-weight:800;color:rgba(255,255,255,.8)">Owned</span>
+    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;border:1px solid rgba(255,255,255,.4);margin-left:4px"></span><span style="font-size:5.5px;font-weight:800;color:rgba(255,255,255,.8)">Rented</span>
+  </div>`;
+  mapHtml+='</div>';
+
+  let h=`<div class="map-wrap">`;
+  h+=mapHtml;
+
+  if(totalRentPerDay>0){
+    h+=`<div style="padding:7px 10px;background:#fef9c3;border:1px solid #fde68a;border-radius:10px;font-size:10px;font-weight:700;color:#92400e;margin-bottom:6px">⏳ Active rent: <b>${totalRentPerDay}g/day</b> — deducted each night</div>`;
+  }
+
+  h+=`<div class="s-sec">🗺 Available Land</div>`;
+
+  Object.entries(LAND_PLOTS).forEach(([id,plot])=>{
+    const land=owned[id]||{};
+    const isOwned=land.owned;
+    const isRented=land.rented&&!land.owned;
+    const effectiveRent=isRented?Math.round(plot.rentDay*(1+(land.interestAccrued||0))):plot.rentDay;
+    const hasDebt=(land.debtG||0)>0;
+    const fertClass=plot.fertility.toLowerCase();
+
+    h+=`<div class="land-card">
+      <div class="land-card-top">
+        <div class="land-card-left">
+          <span class="land-em">${plot.e}</span>
+          <div>
+            <div class="land-name">${plot.n} <span class="land-fert ${fertClass}">${plot.fertility}</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="land-desc">${plot.desc}</div>
+      <div class="land-price-row">
+        <span class="land-price-tag">💰 Buy: ${plot.buyPrice}g</span>
+        <span class="land-rent-tag">· Rent: ${plot.rentDay}g/day</span>
+        <span class="land-interest-tag">(+${Math.round(plot.interestRate*100)}% interest/season)</span>
+      </div>`;
+
+    if(isOwned){
+      h+=`<span class="land-owned-badge">✓ You own this land</span>`;
+    } else if(isRented){
+      h+=`<span class="land-rented-badge">⏳ Renting · ${effectiveRent}g/day${hasDebt?` · ⚠️ Debt: ${Math.round(land.debtG)}g`:''}</span>`;
+      h+=`<div class="land-btn-row">
+        <button class="land-btn land-btn-buy" data-buy-land="${id}" ${G.gold>=plot.buyPrice?'':'disabled'}>Buy Out ${plot.buyPrice}g</button>
+        <button class="land-btn land-btn-leave" data-leave-land="${id}">Leave Plot</button>
+      </div>`;
+    } else {
+      h+=`<div class="land-btn-row">
+        <button class="land-btn land-btn-buy" data-buy-land="${id}" ${G.gold>=plot.buyPrice?'':'disabled'}>Buy ${plot.buyPrice}g</button>
+        <button class="land-btn land-btn-rent" data-rent-land="${id}" ${G.gold>=plot.rentDay?'':'disabled'}>Rent ${plot.rentDay}g/day</button>
+      </div>`;
+    }
+    h+='</div>';
+  });
+
+  h+=`<div class="market-note" style="margin-top:4px">💡 <b>Land Tips:</b><br>Owned land is yours permanently. Rented land charges daily — interest compounds every season. Poor soil gives less yield; Volcanic soil gives exceptional bonuses. Leave a rented plot anytime, but any debt is forgiven.</div>`;
+  h+='</div>';
+  return h;
+}
+
+/* ══ BUY / RENT / LEAVE LAND ══ */
+function buyLand(id){
+  const plot=LAND_PLOTS[id];if(!plot)return;
+  const land=G.lands[id]||{};
+  if(land.owned){toast('You already own this land!','warn');return;}
+  if(G.gold<plot.buyPrice){toast('Need '+plot.buyPrice+'g to buy!','error');snd('error');return;}
+  G.gold-=plot.buyPrice;
+  G.lands[id]={owned:true,rented:false,rentDays:0,interestAccrued:0,debtG:0};
+  snd('coin');
+  toast(plot.e+' '+plot.n+' purchased! It\'s yours! 🎉','success',3200);
+  setTimeout(()=>toast('💡 Visit the Map tab to manage your lands.','info',3000),1500);
+  render();
+}
+function rentLand(id){
+  const plot=LAND_PLOTS[id];if(!plot)return;
+  const land=G.lands[id]||{};
+  if(land.owned||land.rented){toast('Already acquired!','warn');return;}
+  if(G.gold<plot.rentDay){toast('Need '+plot.rentDay+'g for first day\'s rent!','error');snd('error');return;}
+  G.gold-=plot.rentDay;
+  G.lands[id]={owned:false,rented:true,rentDays:1,interestAccrued:0,debtG:0};
+  snd('buy');
+  toast(plot.e+' '+plot.n+' rented! Rent of '+plot.rentDay+'g/day deducted each night.','success',3500);
+  render();
+}
+function leaveLand(id){
+  const plot=LAND_PLOTS[id];if(!plot)return;
+  const land=G.lands[id];
+  if(!land||!land.rented||land.owned)return;
+  land.rented=false;land.debtG=0;
+  toast(plot.e+' Left '+plot.n+'. Debt cleared. Goodbye! 👋','info',3000);
+  render();
+}
+function exportSave(){
+  if(!G.day){toast('No save to export!','warn');return;}
+  const data={...G,_user:CU,_vf_version:6,_ts:Date.now()};
+  try{
+    const json=JSON.stringify(data,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`valley-farm-${CU||'save'}-yr${G.year}-day${G.day}.json`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    snd('coin');
+    toast('💾 Save exported!','success',2500);
+  }catch(e){
+    // Fallback: copy to clipboard or show in textarea
+    toast('Export failed — try another browser','error');
+  }
+}
+
+function importSave(){
+  const input=document.createElement('input');
+  input.type='file';input.accept='.json,application/json';
+  input.onchange=e=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=evt=>{
+      try{
+        const data=JSON.parse(evt.target.result);
+        if(!data.day||!data.farm){toast('Invalid save file!','error');return;}
+        loadState(data);
+        saveAll();
+        render();
+        closePause();
+        snd('levelup');
+        toast('📥 Save imported! Welcome back, '+(data._user||CU)+'!','success',3500);
+      }catch(err){
+        toast('Failed to load save: '+err.message,'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);input.click();document.body.removeChild(input);
+}
+
+/* ══ SLEEP / DAY ADVANCE ══ */
+function doSleep(){
+  if(paused)return;
+  clearInterval(clockInt);
+  snd('sleep');
+  document.getElementById('sleep-overlay').classList.add('show');
+  const earned=G.pending,prevSi=G.si;
+  setTimeout(()=>{
+    advanceDay();
+    checkAchievements();
+    document.getElementById('sleep-overlay').classList.remove('show');
+    saveAll();
+    const msgs=[];
+    if(earned>0)msgs.push({m:'💰 Received '+earned+'g from shipping!',t:'success'});
+    if(G.weather==='rainy')msgs.push({m:'🌧️ It\'s raining! Crops watered.',t:'info'});
+    if((G.upgrades?.sprinkler||0)>0&&G.weather!=='rainy')msgs.push({m:'🚿 Sprinkler watered all your crops!',t:'info'});
+    // Rent notifications
+    const debtPlots=Object.entries(G.lands||{}).filter(([,l])=>l.rented&&!l.owned&&(l.debtG||0)>0);
+    if(debtPlots.length)msgs.push({m:'⚠️ Missed rent on '+debtPlots.length+' plot(s)! Debt accruing.','t':'error'});
+    if(G.si!==prevSi){msgs.push({m:['🌸','☀️','🍂','❄️'][G.si]+' '+season()+' has arrived!',t:'warn'});showSeasonBanner();if(season()==='Winter')tickMarket();}
+    msgs.push({m:'🌅 Good morning, '+CU+'! Day '+G.day,t:'info'});
+    msgs.forEach(({m,t},i)=>setTimeout(()=>toast(m,t,3200),i*600));
+    startClock();render();
+  },1800);
+}
+
+function advanceDay(){
+  const hasGreenhouse=(G.upgrades?.greenhouse||0)>0;
+  const hasSprinkler=(G.upgrades?.sprinkler||0)>0;
+
+  G.farm=G.farm.map(row=>row.map(tile=>{
+    if(!tile.crop){
+      if(!tile.tilled)return{tilled:false,watered:false,crop:null,idleDays:0,deco:tile.deco||null};
+      const idle=(tile.idleDays||0)+1;
+      if(idle>=2)return{tilled:false,watered:false,crop:null,idleDays:0,deco:null};
+      return{...tile,watered:false,idleDays:idle};
+    }
+    const cr=CROPS[tile.crop.type],s=season();
+    const isWinter=s==='Winter';
+    const wrongSeason=!cr.seasons.includes(s)&&!isWinter;
+    if(wrongSeason)return{tilled:true,watered:false,crop:null,idleDays:0,deco:null};
+    if(isWinter&&!hasGreenhouse)return{tilled:true,watered:false,crop:null,idleDays:0,deco:null};
+    // With greenhouse in winter, or normal season: crops grow if watered
+    const newDays=tile.watered?tile.crop.days+1:tile.crop.days;
+    return{...tile,watered:false,crop:{...tile.crop,days:newDays},idleDays:0};
+  }));
+
+  G.yearEarned=(G.yearEarned||0)+G.pending;
+  G.gold+=G.pending;G.pending=0;
+  G.day++;
+  if(G.day>28){G.day=1;G.si=(G.si+1)%4;if(G.si===0){G.year++;G.yearEarned=0;}}
+
+  const rainChance={Spring:0.28,Summer:0.22,Fall:0.10,Winter:0}[season()]||0.22;
+  G.weather=(S.weather&&Math.random()<rainChance)?'rainy':'sunny';
+  // Cactus cheat: force rain next day
+  if(G.cactusRain){G.weather='rainy';G.cactusRain=false;}
+
+  // Apply rain (waters crops) or sprinkler
+  if(G.weather==='rainy'||hasSprinkler){
+    G.farm=G.farm.map(row=>row.map(t=>t.tilled?{...t,watered:true}:t));
+  }
+
+  if(season()==='Winter')tickMarket();
+  G.time=360;
+  G.energy=maxEnergy();
+  G.stats.days++;
+
+  // Deduct rent for rented plots
+  if(G.lands){
+    Object.entries(G.lands).forEach(([id,land])=>{
+      if(land.rented&&!land.owned){
+        const plot=LAND_PLOTS[id];if(!plot)return;
+        const effectiveRent=Math.round(plot.rentDay*(1+(land.interestAccrued||0)));
+        if(G.gold>=effectiveRent){
+          G.gold-=effectiveRent;
+          land.rentDays=(land.rentDays||0)+1;
+          // Interest compounds every 28 days of renting
+          if(land.rentDays>0&&land.rentDays%28===0){
+            land.interestAccrued=(land.interestAccrued||0)+plot.interestRate;
+          }
+        } else {
+          // Can't pay — accumulate as debt, apply interest penalty
+          const shortfall=effectiveRent-G.gold;
+          G.gold=0;
+          land.debtG=(land.debtG||0)+shortfall+Math.round(shortfall*plot.interestRate);
+        }
+      }
+    });
+  }
+}
+
+function showSeasonBanner(){
+  const b=document.createElement('div');b.className='season-banner';
+  b.textContent=['🌸','☀️','🍂','❄️'][G.si]+' '+season()+' has arrived!';
+  document.body.appendChild(b);setTimeout(()=>b.remove(),2800);
+}
+
+/* ══ CLOCK ══ */
+function startClock(){
+  clearInterval(clockInt);
+  clockInt=setInterval(()=>{
+    if(paused)return;
+    G.time+=2;
+    if(G.time>=1320){clearInterval(clockInt);toast('💤 Fell asleep — it\'s late!','info',2500);setTimeout(doSleep,1000);return;}
+    renderHUD();
+  },300);
+}
+
+/* ══ PAUSE ══ */
+function openPause(){
+  paused=true;
+  document.getElementById('pause-sub').textContent='Valley Farm · Day '+G.day+' · Yr.'+G.year;
+  document.getElementById('pause-overlay').classList.add('show');
+}
+function closePause(){
+  paused=false;
+  document.getElementById('pause-overlay').classList.remove('show');
+}
+document.getElementById('pause-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('pause-overlay'))closePause();
+});
+document.getElementById('help-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('help-overlay'))closeHelp();
+});
+
+/* ══ TOOLS / TABS ══ */
+function setTab(t){
+  currentTab=t;
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  renderSide();
+}
+function setTool(t){
+  G.tool=t;
+  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('tool-'+t);if(el)el.classList.add('active');
+  updateSeedSel();
+  const ds=document.getElementById('deco-select');
+  if(ds)ds.style.display=t==='deco'?'block':'none';
+}
+function updateSeedSel(){
+  const sel=document.getElementById('seed-select');
+  sel.style.display=G.tool==='seed'?'block':'none';
+  if(G.tool!=='seed')return;
+  const av=sCrops();
+  sel.innerHTML=av.map(([t,c])=>`<option value="${t}"${t===G.seed?' selected':''}${!(G.inv[t]||0)?' disabled':''}>${c.e} ${c.n} (×${G.inv[t]||0})</option>`).join('');
+  if(!(G.inv[G.seed]||0)){const alt=av.find(([t])=>(G.inv[t]||0)>0);if(alt)G.seed=alt[0];}
+  sel.value=G.seed;
+}
+function render(){
+  renderHUD();renderFarm();renderSide();updateSeedSel();updateTabLabels();
+  const ha=document.getElementById('tool-harvestall');
+  if(ha)ha.style.display=allCropsReady()?'block':'none';
+}
+function updateTabLabels(){
+  const lbl=season()==='Winter'?'🏪 Market':'🛒 Shop';
+  document.querySelectorAll('.tab-btn[data-tab="shop"]').forEach(b=>{b.textContent=lbl;});
+}
+
+/* ══ TILE CLICK ══ */
+function clickTile(r,c){
+  if(paused)return;
+  if(G.energy<=0){toast('Too tired! 😴 Sleep to restore energy.','error');snd('error');return;}
+  const tile=G.farm[r][c];let changed=false;
+  const useE=()=>{if(S.energyCost)G.energy=Math.max(0,G.energy-1);};
+  const fLv=getLevel(G.skills?.farming?.xp||0);
+  const wLv=getLevel(G.skills?.watering?.xp||0);
+  const hLv=getLevel(G.skills?.harvesting?.xp||0);
+
+  if(G.tool==='hoe'){
+    if(tile.deco){
+      G.farm[r][c]={...tile,deco:null};
+      useE();snd('till');spawnTileEffect(r,c,'💨');
+      toast('Cleared '+DECOS[tile.deco].n,'info',1200);changed=true;
+    } else if(!tile.tilled){
+      const newTile={...tile,tilled:true,idleDays:0,deco:null};
+      if(fLv>=10)newTile.watered=true;
+      G.farm[r][c]=newTile;
+      if(fLv<5)useE();
+      snd('till');
+      addXP('farming',5);
+      toast(fLv>=10?'Tilled & watered! 🌱💧':'Tilled! 🌱','success');changed=true;
+    } else toast('Already tilled!','info',1100);
+  }
+  else if(G.tool==='water'){
+    if(!tile.tilled){toast('Till the soil first!','warn',1100);return;}
+    if(tile.watered){toast('Already watered!','info',1100);return;}
+    G.farm[r][c]={...tile,watered:true};
+    if(wLv<5)useE();
+    snd('water');spawnTileEffect(r,c,'💦');
+    addXP('watering',3);
+    toast('Watered! 💧','info');changed=true;
+  }
+  else if(G.tool==='seed'){
+    if(season()==='Winter'&&!(G.upgrades?.greenhouse)){toast('❄️ No planting in Winter!<br>Buy the Greenhouse upgrade.','warn');return;}
+    if(!tile.tilled){toast('Till first!','warn',1100);return;}
+    if(tile.crop){toast('Already planted!','warn',1100);return;}
+    const cr=CROPS[G.seed];
+    if(!cr.seasons.includes(season())&&season()!=='Winter'){toast(cr.n+' won\'t grow in '+season()+'!','error');return;}
+    if(!(G.inv[G.seed]||0)){toast('No '+cr.n+' seeds!','error');return;}
+    G.farm[r][c]={...tile,crop:{type:G.seed,days:0},idleDays:0};
+    G.inv[G.seed]--;
+    snd('place');spawnTileEffect(r,c,'🌱');
+    toast('Planted '+cr.n+'! 🌱','success');changed=true;
+  }
+  else if(G.tool==='shovel'){
+    if(!tile.tilled){toast('Nothing to dig here!','info',1100);return;}
+    if(!tile.crop){toast('No crop planted here!','info',1100);return;}
+    if(cropStage(tile.crop)===3){toast('Crop is ready! Harvest it with the Scythe.','warn');return;}
+    const cr=CROPS[tile.crop.type];
+    G.inv[tile.crop.type]=(G.inv[tile.crop.type]||0)+1;
+    G.farm[r][c]={...tile,crop:null,watered:false,idleDays:0};
+    useE();snd('till');spawnTileEffect(r,c,'🪱');
+    toast('Dug up '+cr.n+'! Seed returned.','success');changed=true;
+  }
+  else if(G.tool==='scythe'){
+    if(!tile.crop){toast('No crop here!','warn',1100);return;}
+    if(cropStage(tile.crop)!==3){toast('Not ready! '+(CROPS[tile.crop.type].days-tile.crop.days)+'d left.','warn');return;}
+    const cr=CROPS[tile.crop.type];
+    let qty=1;
+    const bonusChance=hLv>=10?0.25:hLv>=5?0.15:0;
+    if(bonusChance>0&&Math.random()<bonusChance)qty=2;
+    G.bag[tile.crop.type]=(G.bag[tile.crop.type]||0)+qty;
+    G.farm[r][c]={...tile,crop:null,watered:false,idleDays:0};
+    useE();G.stats.crops+=qty;
+    snd('harvest');spawnTileEffect(r,c,qty>1?'🎉':'⭐');
+    addXP('harvesting',10);
+    toast('Harvested '+cr.n+(qty>1?' ×2 Bonus! 🎉':' '+cr.e),'success');changed=true;
+  }
+  else if(G.tool==='deco'){
+    if(tile.tilled||tile.crop){toast('Can only decorate untilled grass!','warn',1200);return;}
+    if(TMAP.has(r*100+c)){return;}
+    if(tile.deco===G.deco){
+      G.farm[r][c]={...tile,deco:null};
+      toast('Removed '+DECOS[G.deco].n,'info',1100);
+    } else {
+      G.farm[r][c]={...tile,deco:G.deco};
+      snd('place');
+      toast('Placed '+DECOS[G.deco].n+'! 🎨','success',1100);
+    }
+    changed=true;
+  }
+
+  if(changed)render();
+}
+
+/* ══ BAG TOGGLE ══ */
+function toggleBag(){
+  if(window.innerWidth>680){
+    const side=document.getElementById('side');
+    const collapsed=side.classList.toggle('side-collapsed');
+    if(!collapsed)renderSide();
+  } else {
+    sheetOpen?closeSheet():openSheet();
+  }
+}
+
+/* ══ BOTTOM SHEET ══ */
+let sheetOpen=false;
+function openSheet(){
+  if(sheetOpen)return;
+  sheetOpen=true;
+  renderSide();
+  document.getElementById('bottom-sheet').classList.add('sheet-open');
+  document.getElementById('sheet-bg').classList.add('sheet-open');
+  document.getElementById('swipe-hint').style.display='none';
+}
+function closeSheet(){
+  if(!sheetOpen)return;
+  sheetOpen=false;
+  document.getElementById('bottom-sheet').classList.remove('sheet-open');
+  document.getElementById('sheet-bg').classList.remove('sheet-open');
+}
+
+/* ══ SWIPE GESTURE ══ */
+(function(){
+  let touchStartY=0,touchStartX=0,tracking=false;
+  const SWIPE_THRESHOLD=55;
+  document.getElementById('farm-wrap').addEventListener('touchstart',e=>{
+    touchStartY=e.touches[0].clientY;touchStartX=e.touches[0].clientX;tracking=true;
+  },{passive:true});
+  document.getElementById('farm-wrap').addEventListener('touchend',e=>{
+    if(!tracking)return;tracking=false;
+    const dy=touchStartY-e.changedTouches[0].clientY;
+    const dx=Math.abs(touchStartX-e.changedTouches[0].clientX);
+    if(dx>60)return;
+    if(dy>SWIPE_THRESHOLD&&!sheetOpen)openSheet();
+  },{passive:true});
+  const sheet=document.getElementById('bottom-sheet');
+  let sheetTouchStartY=0;
+  sheet.addEventListener('touchstart',e=>{sheetTouchStartY=e.touches[0].clientY;},{passive:true});
+  sheet.addEventListener('touchend',e=>{
+    const dy=sheetTouchStartY-e.changedTouches[0].clientY;
+    const content=document.getElementById('sheet-content');
+    const atTop=content.scrollTop<=2;
+    if(dy<-SWIPE_THRESHOLD&&(sheetTouchStartY<sheet.getBoundingClientRect().top+80||atTop)){closeSheet();}
+  },{passive:true});
+})();
+
+/* ══ CACTUS CHEAT ══ */
+let cactusClicks=0,cactusTimer=null;
+function cactusClick(){
+  if(paused)return;
+  cactusClicks++;
+  clearTimeout(cactusTimer);
+  cactusTimer=setTimeout(()=>{cactusClicks=0;},2200);
+  if(cactusClicks>=3){
+    cactusClicks=0;clearTimeout(cactusTimer);
+    G.cactusRain=true;
+    showCactusHmm();
+  }
+  // No feedback for clicks 1 or 2 — silent
+}
+function showCactusHmm(){
+  const p=document.getElementById('cactus-popup');
+  p.classList.remove('show');
+  void p.offsetWidth;
+  p.classList.add('show');
+  clearTimeout(p._ct);
+  p._ct=setTimeout(()=>p.classList.remove('show'),2800);
+}
+
+/* ══ ACHIEVEMENTS ══ */
+function checkAchievements(){
+  if(!G.achievements)G.achievements=[];
+  const key='rich_yr'+G.year;
+  if((G.yearEarned||0)>=20000&&!G.achievements.includes(key)){
+    G.achievements.push(key);
+    setTimeout(()=>showAchievement('💰','Tycoon Farmer!','Earned 20,000g in Year '+G.year+'!'),1600);
+  }
+}
+function showAchievement(icon,name,desc){
+  const p=document.getElementById('achieve-popup');
+  document.getElementById('achieve-icon').textContent=icon;
+  document.getElementById('achieve-name').textContent=name;
+  document.getElementById('achieve-desc').textContent=desc;
+  p.classList.remove('show');
+  void p.offsetWidth;
+  p.classList.add('show');
+  clearTimeout(p._hideTimer);
+  p._hideTimer=setTimeout(()=>p.classList.remove('show'),4800);
+}
+
+/* ══ HELP ══ */
+const HELP_STEPS=[
+  {e:'🌾',title:'Welcome to Valley Farm!',body:'Grow crops, earn gold, and build your farming empire. Each year has 4 seasons of 28 days. The game auto-saves every 30 seconds.',tip:'Tip: Your farm persists — come back any time!'},
+  {e:'⛏',title:'Tilling the Soil',body:'Select the Hoe tool, then tap any green grass tile to till it. Tilled soil left empty for 2 days will revert back to grass!',tip:'Shortcut: Press H to switch to the Hoe.'},
+  {e:'🛒',title:'Buying Seeds',body:'Open the Bag panel and switch to the Shop tab. Seeds are season-specific — you can only buy what grows now!',tip:'Tip: Different seasons have different crops.'},
+  {e:'🌱',title:'Planting Seeds',body:'Select the Seeds tool, choose a seed from the dropdown, then tap a tilled tile. Each planting uses one seed from your inventory.',tip:'Shortcut: Press S to switch to Seeds.'},
+  {e:'💧',title:'Watering Your Crops',body:'Select the Water tool and tap any planted tile. Crops only grow on days they are watered. Miss a day and that growth is lost!',tip:'Shortcut: Press W to switch to Water.'},
+  {e:'✨',title:'Harvesting Crops',body:'When a crop is fully grown it glows with ✨. Select the Scythe tool and tap it to harvest it into your bag.',tip:'Shortcut: Press R to switch to Scythe.'},
+  {e:'📦',title:'Shipping for Gold',body:'Open the Bag panel and press Ship All to send your harvested crops. Gold arrives the next morning after sleeping!',tip:'Tip: Ship at night so gold arrives first thing.'},
+  {e:'⚒',title:'Upgrades Shop',body:'Visit the Upgrades tab to buy permanent farm improvements! The Sprinkler auto-waters crops, Greenhouse lets crops survive Winter, Barn boosts sales by 15%, and the Well increases max energy.',tip:'💡 Upgrades persist forever — invest early!'},
+  {e:'⭐',title:'Skills & Leveling',body:'Tilling, watering, and harvesting all grant XP. Level up to unlock bonuses: free energy actions, better yield chance, and more! Check your skills in the Bag tab.',tip:'💡 Harvesting gives the most XP per action!'},
+  {e:'🎨',title:'Farm Customization',body:'Use the Deco tool to place paths, fences, flowers, lamps, signs, and rocks on untilled grass tiles. Use the Hoe on a decoration to remove it.',tip:'Tip: Decos are free and purely aesthetic!'},
+  {e:'🍂',title:'Seasons & Winter Market',body:'Spring, Summer, Fall, Winter — each lasts 28 days. In Winter no crops grow (unless you have the Greenhouse!) — instead the Shop becomes a live Auction House with fluctuating prices!',tip:'💡 Save Fall crops to sell at peak Winter prices!'},
+  {e:'💾',title:'Save & Export',body:'The game auto-saves every 30 seconds. In the ⏸ Menu you can also Export your save to a JSON file and Import it back later — great for backups!',tip:'🌵 Psst… the cacti are hiding a secret. Click carefully…'},
+];
+let helpStep=0;
+function openHelp(){
+  helpStep=0;paused=true;renderHelpStep();
+  document.getElementById('help-overlay').classList.add('show');
+}
+function closeHelp(){
+  document.getElementById('help-overlay').classList.remove('show');paused=false;
+}
+function helpNav(dir){
+  helpStep=Math.max(0,Math.min(HELP_STEPS.length-1,helpStep+dir));
+  if(dir>0&&helpStep===HELP_STEPS.length-1){renderHelpStep();document.getElementById('help-next').textContent='Done ✓';document.getElementById('help-next').onclick=closeHelp;return;}
+  document.getElementById('help-next').textContent='Next →';
+  document.getElementById('help-next').onclick=()=>helpNav(1);
+  renderHelpStep();
+}
+function renderHelpStep(){
+  const step=HELP_STEPS[helpStep];
+  document.getElementById('help-emoji').textContent=step.e;
+  document.getElementById('help-title').textContent=step.title;
+  document.getElementById('help-body').textContent=step.body;
+  document.getElementById('help-tip').textContent=step.tip;
+  document.getElementById('help-step-label').textContent='Step '+(helpStep+1)+' of '+HELP_STEPS.length;
+  document.getElementById('help-dots').innerHTML=HELP_STEPS.map((_,i)=>`<div class="help-dot${i===helpStep?' active':''}"></div>`).join('');
+  const prevBtn=document.getElementById('help-prev');
+  prevBtn.style.display=helpStep===0?'none':'block';
+  const nextBtn=document.getElementById('help-next');
+  nextBtn.textContent=helpStep===HELP_STEPS.length-1?'Done ✓':'Next →';
+  nextBtn.onclick=helpStep===HELP_STEPS.length-1?closeHelp:()=>helpNav(1);
+}
+
+/* ══ AMBIENT PARTICLES ══ */
+const AMBIENT_CFG={
+  Spring:{emojis:['🌸','🌺','🌷'],dir:'rise'},
+  Summer:{emojis:['✨','🌟','💛'],dir:'rise'},
+  Fall:  {emojis:['🍂','🍁','🍃'],dir:'fall'},
+  Winter:{emojis:['❄️','🌨️','❅'],dir:'fall'},
+};
+let ambientInt=null;
+function spawnAmbientParticle(){
+  const s=season();const cfg=AMBIENT_CFG[s];if(!cfg)return;
+  const layer=document.getElementById('ambient-layer');if(!layer)return;
+  const em=cfg.emojis[Math.floor(Math.random()*cfg.emojis.length)];
+  const p=document.createElement('div');
+  p.className='ambient-particle';p.textContent=em;
+  const sz=12+Math.random()*8;
+  const x=Math.random()*window.innerWidth;
+  const dur=9000+Math.random()*8000;
+  p.style.fontSize=sz+'px';
+  p.style.opacity=0.3+Math.random()*0.35;
+  p.style.animationDuration=dur+'ms';
+  p.style.animationName=cfg.dir==='fall'?'ambientFall':'ambientRise';
+  if(cfg.dir==='fall'){p.style.left=x+'px';p.style.top='-30px';}
+  else{p.style.left=x+'px';p.style.bottom='-30px';}
+  layer.appendChild(p);
+  setTimeout(()=>p.remove(),dur+200);
+}
+function startAmbient(){
+  clearInterval(ambientInt);
+  ambientInt=setInterval(spawnAmbientParticle,1600);
+}
+
+/* ══ LAUNCH ══ */
+function launchGame(){
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  render();startClock();startAmbient();
+  clearInterval(asInt);
+  asInt=setInterval(saveAll,30000);
+  toast('Welcome back, '+CU+'! 🌾','success',2800);
+}
+
+/* ══ KEYBOARD ══ */
+window.addEventListener('keydown',e=>{
+  if(!document.getElementById('game-screen').classList.contains('active'))return;
+  if(e.code==='Escape'){
+    if(document.getElementById('help-overlay').classList.contains('show')){closeHelp();return;}
+    if(sheetOpen){closeSheet();return;}
+    paused?closePause():openPause();return;
+  }
+  if(e.key==='?'||e.code==='Slash'){openHelp();return;}
+  if(paused||sheetOpen)return;
+  const map={KeyH:'hoe',KeyW:'water',KeyS:'seed',KeyR:'scythe',KeyD:'shovel'};
+  if(map[e.code])setTool(map[e.code]);
+  if(e.code==='Space'){e.preventDefault();doSleep();}
+});
+
+/* ══ INIT ══ */
+loadS();applyS();renderSaved();
+</script>
+</body>
+</html>
