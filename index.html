@@ -156,11 +156,11 @@
     <button class="tool-btn active" id="tool-hoe" onclick="setTool('hoe')">⛏ Hoe</button>
     <button class="tool-btn" id="tool-water" onclick="setTool('water')">💧 Water</button>
     <button class="tool-btn" id="tool-seed" onclick="setTool('seed')">🌱 Seeds</button>
+    <select id="seed-select" style="display:none" onchange="G.seed=this.value"></select>
     <button class="tool-btn" id="tool-shovel" onclick="setTool('shovel')">🪱 Dig Up</button>
     <button class="tool-btn" id="tool-scythe" onclick="setTool('scythe')">🌾 Scythe</button>
     <button id="tool-harvestall" onclick="scytheAll()">⚡ Harvest All</button>
     <button class="tool-btn" id="tool-deco" onclick="setTool('deco')">🎨 Deco</button>
-    <select id="seed-select" style="display:none" onchange="G.seed=this.value"></select>
     <select id="deco-select" style="display:none" onchange="G.deco=this.value">
       <option value="path">🟫 Path</option>
       <option value="fence">🪵 Fence</option>
@@ -215,6 +215,21 @@
   <div class="tp-sub" id="tp-sub">📦 Packing your tools...</div>
   <div class="tp-bar-wrap"><div class="tp-bar" id="tp-bar"></div></div>
   <div class="tp-tip" id="tp-tip">Each land has its own farm grid!</div>
+</div>
+
+<!-- CITY SCREEN -->
+<div id="city-screen">
+  <div class="city-header">
+    <button class="city-close-btn" onclick="closeCityScreen()">← Back to Farm</button>
+    <div class="city-header-title">🏙️ City District</div>
+    <div id="city-gold-disp" class="city-header-gold">💰 0g</div>
+  </div>
+  <div class="city-tabs">
+    <button class="city-tab-btn active" data-ctab="market" onclick="setCityTab('market')">📊 Market</button>
+    <button class="city-tab-btn" data-ctab="portfolio" onclick="setCityTab('portfolio')">🎒 Portfolio</button>
+    <button class="city-tab-btn" data-ctab="company" onclick="setCityTab('company')">🏢 My Company</button>
+  </div>
+  <div id="city-body"></div>
 </div>
 
 <!-- HELP OVERLAY -->
