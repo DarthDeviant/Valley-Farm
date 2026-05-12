@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙ Patch Editor — Valley Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090b;--panel:#0e1114;--panel2:#131619;--panel3:#181c1f;
+  --border:#1a1f24;--border2:#222830;--border3:#2a333b;
+  --green:#22c55e;--green-d:rgba(34,197,94,.12);--green-g:rgba(34,197,94,.06);
+  --amber:#f59e0b;--amber-d:rgba(245,158,11,.10);
+  --blue:#60a5fa;--purple:#a78bfa;--red:#f87171;
+  --text:#bdc8d4;--muted:#3d4f5c;--dim:#1e2831;
+  --code:#060809;--mono:'JetBrains Mono',monospace;--ui:'Syne',sans-serif;
+  --r:7px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono)}
+
+/* ── TOP BAR ── */
+#topbar{
+  height:42px;background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;
+  position:relative;
+}
+#topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.18}
+.tb-logo{font-family:var(--ui);font-size:13px;color:var(--green);letter-spacing:-.3px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tb-logo span{color:var(--muted);font-size:10px;font-family:var(--mono);font-weight:400;letter-spacing:.5px}
+.tb-sep{width:1px;height:18px;background:var(--border2);margin:0 2px;flex-shrink:0}
+.src-wrap{display:flex;align-items:center;gap:5px}
+.src-label{font-size:10px;color:var(--muted);letter-spacing:.3px}
+#game-src{font-family:var(--mono);font-size:10px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;
+  color:var(--text);padding:4px 9px;width:130px;outline:none;transition:border-color .15s}
+#game-src:focus{border-color:var(--green)}
+.spacer{flex:1}
+.tb-btn{font-family:var(--mono);font-size:10px;font-weight:600;padding:5px 11px;border-radius:5px;
+  border:1px solid var(--border2);background:var(--panel2);color:var(--muted);cursor:pointer;
+  transition:all .15s;letter-spacing:.2px;white-space:nowrap}
+.tb-btn:hover{border-color:var(--border3);color:var(--text)}
+.tb-btn.g{border-color:var(--green);color:var(--green);background:var(--green-d)}
+.tb-btn.g:hover{background:rgba(34,197,94,.2)}
+#inspect-btn{display:flex;align-items:center;gap:6px}
+#inspect-btn .led{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .2s;flex-shrink:0}
+#inspect-btn.on{border-color:var(--green);color:var(--green);background:var(--green-g)}
+#inspect-btn.on .led{background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* ── LAYOUT ── */
+#main{display:flex;height:calc(100vh - 42px);overflow:hidden}
+#game-pane{flex:1 1 58%;min-width:180px;position:relative;background:#000;border-right:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
+#game-frame{width:100%;flex:1;border:none;display:block}
+#inspect-banner{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#000;font-size:10px;font-weight:700;
+  padding:4px 12px;border-radius:20px;pointer-events:none;
+  opacity:0;transition:opacity .2s;white-space:nowrap;z-index:5;letter-spacing:.3px
+}
+#inspect-banner.on{opacity:1}
+#resize-h{width:3px;cursor:col-resize;background:var(--border);flex-shrink:0;transition:background .15s}
+#resize-h:hover,#resize-h.d{background:var(--green)}
+#right{flex:0 0 370px;min-width:270px;max-width:580px;display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
+
+/* ── TABS ── */
+.tbar{display:flex;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.tab{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:11px 13px;
+  cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.a{color:var(--green);border-bottom-color:var(--green)}
+.tc{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.tc.a{display:flex}
+
+/* ── SHARED FORM ── */
+.sec{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+select.si,input.si{
+  font-family:var(--mono);font-size:11px;background:var(--code);border:1px solid var(--border2);
+  border-radius:5px;color:var(--text);padding:6px 9px;outline:none;width:100%;transition:border-color .15s
+}
+select.si:focus,input.si:focus{border-color:var(--green)}
+textarea.code{
+  font-family:var(--mono);font-size:11px;background:var(--code);border:1px solid var(--border2);
+  border-radius:5px;color:var(--green);padding:10px;outline:none;resize:vertical;
+  width:100%;min-height:90px;line-height:1.65;transition:border-color .15s;tab-size:2
+}
+textarea.code:focus{border-color:var(--green)}
+textarea.js{color:var(--amber)}
+.add-btn{
+  font-family:var(--mono);font-size:11px;font-weight:700;padding:8px;border-radius:var(--r);
+  border:1px solid var(--green);background:var(--green-d);color:var(--green);
+  cursor:pointer;width:100%;transition:background .15s;letter-spacing:.2px
+}
+.add-btn:hover{background:rgba(34,197,94,.2)}
+.dvd{height:1px;background:var(--border);margin:4px 0;flex-shrink:0}
+
+/* ── INSPECTOR PANE ── */
+#p-insp{padding:13px;gap:11px;overflow-y:auto}
+.el-card{background:var(--panel2);border:1px solid var(--border2);border-radius:var(--r);padding:11px;display:flex;flex-direction:column;gap:5px}
+.el-tag{color:var(--blue);font-size:12px;font-weight:600;word-break:break-all}
+.el-sel{color:var(--amber);font-size:10px;opacity:.85}
+.el-meta{color:var(--muted);font-size:9px;line-height:1.8}
+.empty-st{text-align:center;padding:36px 16px;color:var(--muted);font-size:11px;line-height:2}
+.empty-st .ico{font-size:30px;margin-bottom:8px;display:block}
+
+/* ── ENTRIES PANE ── */
+#p-ent{padding:13px;gap:7px;overflow-y:auto}
+.ecard{
+  background:var(--panel2);border:1px solid var(--border2);border-radius:var(--r);
+  padding:9px 11px;display:flex;align-items:flex-start;gap:9px
+}
+.ecard:hover{border-color:var(--border3)}
+.etag{font-size:8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:2px}
+.etag.css{background:rgba(96,165,250,.12);color:var(--blue)}
+.etag.html{background:var(--amber-d);color:var(--amber)}
+.etag.js{background:rgba(251,191,36,.08);color:#fbbf24}
+.etag.attr{background:rgba(167,139,250,.10);color:var(--purple)}
+.ebody{flex:1;min-width:0}
+.elabel{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.esub{font-size:9px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edel{font-size:12px;color:var(--muted);cursor:pointer;flex-shrink:0;background:none;border:none;transition:color .15s;padding:1px 3px}
+.edel:hover{color:var(--red)}
+.mini-add{font-size:10px;font-weight:600;padding:5px 10px;border-radius:5px;border:1px solid var(--border2);
+  background:var(--panel2);color:var(--muted);cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.mini-add:hover{border-color:var(--green);color:var(--green)}
+
+/* ── JSON PANE ── */
+#p-json{padding:13px;gap:9px;overflow:hidden;flex:1}
+#json-pre{
+  font-family:var(--mono);font-size:10px;background:var(--code);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px;overflow:auto;flex:1;min-height:120px;line-height:1.7;white-space:pre
+}
+
+/* ── MANAGER PANE ── */
+#p-mgr{padding:13px;gap:12px;overflow-y:auto}
+.msec{background:var(--panel2);border:1px solid var(--border2);border-radius:var(--r);padding:12px}
+.msec-t{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.msec p{font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:10px}
+.phi{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:10px}
+.phi:last-child{border-bottom:none}
+.ph-v{color:var(--green);font-weight:700;width:55px;flex-shrink:0}
+.ph-s{font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px}
+.ph-s.ok{background:rgba(34,197,94,.1);color:var(--green)}
+.ph-s.pend{background:var(--amber-d);color:var(--amber)}
+.ph-d{color:var(--muted);font-size:9px;flex:1}
+.ph-t{font-size:9px;color:var(--muted)}
+textarea.merge-a{
+  font-family:var(--mono);font-size:10px;background:var(--code);border:1px solid var(--border2);
+  border-radius:5px;color:var(--text);padding:9px;resize:vertical;min-height:80px;width:100%;outline:none
+}
+textarea.merge-a:focus{border-color:var(--amber)}
+.merge-btn{
+  font-family:var(--mono);font-size:10px;font-weight:700;padding:7px 12px;border-radius:5px;
+  border:1px solid var(--amber);background:var(--amber-d);color:var(--amber);
+  cursor:pointer;width:100%;margin-top:6px;transition:background .15s
+}
+.merge-btn:hover{background:rgba(245,158,11,.18)}
+.merge-res{font-size:9px;color:var(--muted);margin-top:5px;display:none}
+.instructions{font-size:10px;color:var(--muted);line-height:2}
+.instructions code{color:var(--green);font-family:var(--mono)}
+.instructions code.a{color:var(--amber)}
+.instructions code.b{color:var(--blue)}
+
+/* ── MODAL ── */
+#modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+#modal-wrap.o{display:flex}
+.mc{background:var(--panel);border:1px solid var(--border2);border-radius:10px;padding:18px;width:430px;max-width:95vw;display:flex;flex-direction:column;gap:11px}
+.mc-t{font-family:var(--ui);font-size:13px;color:var(--text)}
+.mc-acts{display:flex;gap:7px;justify-content:flex-end}
+.mc-cancel,.mc-ok{font-family:var(--mono);font-size:10px;font-weight:700;padding:6px 13px;border-radius:5px;cursor:pointer;border:1px solid var(--border2);background:var(--panel2);color:var(--muted);transition:all .15s}
+.mc-ok{border-color:var(--green);color:var(--green);background:var(--green-d)}
+.mc-ok:hover{background:rgba(34,197,94,.2)}
+.mc-cancel:hover{color:var(--text)}
+
+/* ── NOTIFICATION ── */
+#notif{
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#000;font-size:10px;font-weight:700;
+  padding:6px 15px;border-radius:20px;pointer-events:none;opacity:0;
+  transition:opacity .18s;z-index:300;white-space:nowrap;letter-spacing:.2px
+}
+#notif.on{opacity:1}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="tb-logo">⚙ PATCH EDITOR <span>// Valley Farm</span></div>
+  <div class="tb-sep"></div>
+  <div class="src-wrap">
+    <span class="src-label">GAME:</span>
+    <input id="game-src" value="index.html" placeholder="index.html" onchange="loadGame(this.value)" title="Path to game HTML file">
+  </div>
+  <div class="tb-sep"></div>
+  <button id="inspect-btn" class="tb-btn" onclick="toggleInspector()">
+    <div class="led"></div>Inspector
+  </button>
+  <div class="spacer"></div>
+  <button class="tb-btn" onclick="previewPatch()" title="Inject current patch into the game frame">▶ Preview</button>
+  <button class="tb-btn" onclick="importPatch()">📂 Import</button>
+  <button class="tb-btn g" onclick="downloadPatch()">💾 Export</button>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div id="main">
+  <div id="game-pane">
+    <div id="inspect-banner">🎯 Click any element · ESC to cancel</div>
+    <iframe id="game-frame" src="index.html" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups" allow="same-origin"></iframe>
+  </div>
+  <div id="resize-h"></div>
+  <div id="right">
+
+    <div class="tbar">
+      <div class="tab a" data-t="insp" onclick="ST('insp')">Inspector</div>
+      <div class="tab" data-t="ent" onclick="ST('ent')">Entries <span id="ec"></span></div>
+      <div class="tab" data-t="json" onclick="ST('json')">JSON</div>
+      <div class="tab" data-t="mgr" onclick="ST('mgr')">Manager</div>
+    </div>
+
+    <!-- INSPECTOR -->
+    <div class="tc a" id="tc-insp">
+      <div id="p-insp" style="display:flex;flex-direction:column;padding:13px;gap:11px;overflow-y:auto">
+        <div id="no-el" class="empty-st"><span class="ico">🎯</span>Enable <b>Inspector</b> then<br>click any element in the game.</div>
+        <div id="el-info" style="display:none;flex-direction:column;gap:10px">
+          <div class="sec">Selected Element</div>
+          <div class="el-card">
+            <div class="el-tag" id="el-tag"></div>
+            <div class="el-sel" id="el-sel"></div>
+            <div class="el-meta" id="el-meta"></div>
+          </div>
+          <div class="dvd"></div>
+          <div class="sec">Add Patch Action</div>
+          <div class="fg"><div class="fl">Action Type</div>
+            <select class="si" id="action-sel" onchange="renderActionFields()">
+              <option value="css">CSS Override</option>
+              <option value="innerHTML">Replace innerHTML</option>
+              <option value="replace">Replace outerHTML</option>
+              <option value="insert">Insert HTML</option>
+              <option value="remove">Remove Element</option>
+              <option value="attr">Set Attribute</option>
+            </select>
+          </div>
+          <div id="action-fields"></div>
+          <button class="add-btn" onclick="addFromInspector()">+ Add to Patch</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRIES -->
+    <div class="tc" id="tc-ent">
+      <div id="p-ent" style="display:flex;flex-direction:column;padding:13px;gap:7px;overflow-y:auto">
+        <div id="no-ent" class="empty-st"><span class="ico">📋</span>No entries yet.<br>Inspect elements or add manually.</div>
+        <div id="ent-list" style="display:flex;flex-direction:column;gap:5px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <button class="mini-add" onclick="quickAdd('css')">+ CSS</button>
+          <button class="mini-add" onclick="quickAdd('html')">+ HTML</button>
+          <button class="mini-add" onclick="quickAdd('js')">+ JS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON -->
+    <div class="tc" id="tc-json">
+      <div id="p-json" style="display:flex;flex-direction:column;padding:13px;gap:9px;overflow:hidden;flex:1">
+        <div class="sec">Generated Patch JSON</div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <div class="fg" style="flex:1"><div class="fl">Version</div>
+            <input class="si" id="pv" value="1.0.0" oninput="rJSON()"></div>
+          <div class="fg" style="flex:2"><div class="fl">Description (optional)</div>
+            <input class="si" id="pd" placeholder="e.g. Energy fix + cactus toast" oninput="rJSON()"></div>
+        </div>
+        <pre id="json-pre" style="flex:1;overflow:auto"></pre>
+        <div style="display:flex;gap:7px;flex-shrink:0">
+          <button class="tb-btn" onclick="copyJSON()" style="flex:1">📋 Copy</button>
+          <button class="tb-btn g" onclick="downloadPatch()" style="flex:1">💾 Download patch.json</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGER -->
+    <div class="tc" id="tc-mgr">
+      <div id="p-mgr" style="display:flex;flex-direction:column;padding:13px;gap:12px;overflow-y:auto">
+
+        <div class="msec">
+          <div class="msec-t">📂 Import &amp; Edit</div>
+          <p>Load a <code style="color:var(--green);font-family:var(--mono)">patch.json</code> or <code style="color:var(--amber);font-family:var(--mono)">patches.json</code> array to edit its entries in the visual builder.</p>
+          <button class="tb-btn" onclick="importPatch()" style="width:100%">📂 Load Existing Patch</button>
+        </div>
+
+        <div class="msec">
+          <div class="msec-t">🔀 Merge Patches</div>
+          <p>Paste one or more patch JSON objects (or a <code style="color:var(--amber);font-family:var(--mono)">[]</code> array). They'll be merged into the current working patch. Later entries win on conflicts.</p>
+          <textarea class="merge-a" id="merge-in" placeholder="Paste patch JSON here...&#10;Can be a single object {} or array [...]"></textarea>
+          <button class="merge-btn" onclick="doMerge()">⚡ Merge into Current</button>
+          <div class="merge-res" id="merge-res"></div>
+        </div>
+
+        <div class="msec">
+          <div class="msec-t">📜 Runtime History</div>
+          <div id="ph-list"><div style="font-size:10px;color:var(--muted)">Populated by patcher-v2.js when game is running with <code style="color:var(--amber);font-family:var(--mono)">?vf-debug</code></div></div>
+        </div>
+
+        <div class="msec">
+          <div class="msec-t">💡 patcher-v2.js Setup</div>
+          <div class="instructions">
+            1. Drop <code>patcher-v2.js</code> into your game folder<br>
+            2. In <code>index.html</code> replace the old script tag:<br>
+            &nbsp;&nbsp;<code class="b">&lt;script src="patcher-v2.js" defer&gt;</code><br>
+            3. Single patch → use <code>patch.json</code> (same as before)<br>
+            4. Multi-patch → use <code class="a">patches.json</code> (array)<br>
+            5. Add <code class="a">?vf-debug</code> to URL for the dev panel
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- QUICK-ADD MODAL -->
+<div id="modal-wrap" onclick="if(event.target===this)closeModal()">
+  <div class="mc">
+    <div class="mc-t" id="m-title">Add Entry</div>
+    <div id="m-body"></div>
+    <div class="mc-acts">
+      <button class="mc-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mc-ok" onclick="confirmModal()">Add Entry</button>
+    </div>
+  </div>
+</div>
+
+<div id="notif"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+const S = { entries:[], selEl:null, selCSS:'', selSel:'', inspOn:false, tab:'insp' };
+let nid = 1;
+const uid = () => 'e' + nid++;
+
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+function ST(t) {
+  S.tab = t;
+  document.querySelectorAll('.tab').forEach(el => el.classList.toggle('a', el.dataset.t === t));
+  document.querySelectorAll('.tc').forEach(el => el.classList.remove('a'));
+  document.getElementById('tc-' + t)?.classList.add('a');
+  if (t === 'json') rJSON();
+  if (t === 'mgr') loadHistory();
+}
+
+/* ═══════════════════════════════════════
+   GAME FRAME
+═══════════════════════════════════════ */
+function loadGame(src) {
+  const f = document.getElementById('game-frame');
+  f.src = src;
+  f.onload = () => { if (S.inspOn) injectInspector(); };
+}
+
+/* ═══════════════════════════════════════
+   INSPECTOR
+═══════════════════════════════════════ */
+function toggleInspector() {
+  S.inspOn = !S.inspOn;
+  document.getElementById('inspect-btn').classList.toggle('on', S.inspOn);
+  document.getElementById('inspect-banner').classList.toggle('on', S.inspOn);
+  if (S.inspOn) {
+    const f = document.getElementById('game-frame');
+    if (f.contentDocument?.readyState === 'complete') injectInspector();
+    else f.onload = injectInspector;
+  } else removeInspector();
+}
+
+function injectInspector() {
+  const f = document.getElementById('game-frame');
+  try {
+    const doc = f.contentDocument;
+    if (!doc) { notif('Cannot access game — serve from a local server (e.g. python -m http.server)', true); return; }
+    removeInspector();
+
+    const style = doc.createElement('style');
+    style.id = '__pe_s';
+    style.textContent = '.__peh{outline:2px dashed #22c55e!important;outline-offset:3px!important;cursor:crosshair!important}.__pes{outline:3px solid #f59e0b!important;outline-offset:3px!important}';
+    doc.head.appendChild(style);
+
+    const over = e => { doc.querySelectorAll('.__peh').forEach(x => x.classList.remove('__peh')); e.target.classList.add('__peh'); };
+    const click = e => {
+      e.preventDefault(); e.stopPropagation();
+      doc.querySelectorAll('.__peh,.__pes').forEach(x => x.classList.remove('__peh','__pes'));
+      e.target.classList.add('__pes');
+      selectEl(e.target, doc);
+    };
+    const esc = e => { if (e.key==='Escape') { S.inspOn=false; removeInspector(); document.getElementById('inspect-btn').classList.remove('on'); document.getElementById('inspect-banner').classList.remove('on'); } };
+
+    doc.__pe_o = over; doc.__pe_c = click; doc.__pe_e = esc;
+    doc.addEventListener('mouseover', over, true);
+    doc.addEventListener('click', click, true);
+    doc.addEventListener('keydown', esc, true);
+    notif('Inspector active — click any element in the game');
+  } catch(err) {
+    notif('Access blocked — open game via local server (CORS)', true);
+  }
+}
+
+function removeInspector() {
+  try {
+    const doc = document.getElementById('game-frame').contentDocument;
+    if (!doc) return;
+    doc.getElementById('__pe_s')?.remove();
+    doc.querySelectorAll('.__peh,.__pes').forEach(x => x.classList.remove('__peh','__pes'));
+    if (doc.__pe_o) doc.removeEventListener('mouseover', doc.__pe_o, true);
+    if (doc.__pe_c) doc.removeEventListener('click', doc.__pe_c, true);
+    if (doc.__pe_e) doc.removeEventListener('keydown', doc.__pe_e, true);
+  } catch(_) {}
+}
+
+/* ═══════════════════════════════════════
+   SELECTOR GENERATION
+═══════════════════════════════════════ */
+function getSelector(el, doc) {
+  if (!el || el === doc.body) return 'body';
+  if (el.id) return '#' + el.id;
+  const cls = [...el.classList].filter(c => !c.startsWith('__pe'));
+  if (cls.length) {
+    const s = '.' + cls.join('.');
+    try { if (doc.querySelectorAll(s).length === 1) return s; } catch(_) {}
+  }
+  const parts = [];
+  let cur = el;
+  while (cur && cur !== doc.body) {
+    if (cur.id) { parts.unshift('#' + cur.id); break; }
+    let part = cur.tagName.toLowerCase();
+    const sibs = [...(cur.parentElement?.children||[])].filter(s => s.tagName === cur.tagName);
+    if (sibs.length > 1) part += ':nth-of-type(' + (sibs.indexOf(cur)+1) + ')';
+    parts.unshift(part);
+    cur = cur.parentElement;
+  }
+  return parts.join(' > ');
+}
+
+function getComputedSnippet(el, doc) {
+  try {
+    const cs = doc.defaultView.getComputedStyle(el);
+    return ['color','background-color','font-size','padding','border-radius','display']
+      .map(p => `  ${p}: ${cs.getPropertyValue(p)};`).join('\n');
+  } catch(_) { return '  /* computed styles unavailable */'; }
+}
+
+function selectEl(el, doc) {
+  const sel = getSelector(el, doc);
+  const tag = el.tagName.toLowerCase() + (el.id?'#'+el.id:'') + ([...el.classList].filter(c=>!c.startsWith('__pe')).map(c=>'.'+c).join(''));
+
+  S.selEl = el; S.selSel = sel;
+  try { S.selHTML = el.innerHTML.trim().slice(0,400); } catch(_) { S.selHTML = ''; }
+  S.selCSS = `${sel} {\n${getComputedSnippet(el,doc)}\n}`;
+
+  document.getElementById('no-el').style.display = 'none';
+  const info = document.getElementById('el-info');
+  info.style.display = 'flex';
+  document.getElementById('el-tag').textContent = '<' + tag + '>';
+  document.getElementById('el-sel').textContent = sel;
+  document.getElementById('el-meta').innerHTML = `children: ${el.children.length} &nbsp;·&nbsp; text: "${(el.textContent||'').trim().slice(0,50)}"`;
+
+  renderActionFields();
+  if (S.tab !== 'insp') ST('insp');
+}
+
+/* ═══════════════════════════════════════
+   ACTION FIELDS
+═══════════════════════════════════════ */
+function renderActionFields() {
+  const action = document.getElementById('action-sel').value;
+  const f = document.getElementById('action-fields');
+  const sel = S.selSel || '';
+
+  const templates = {
+    css: `<div class="fg"><div class="fl">CSS Override</div>
+      <textarea class="code" id="af-css">${esc(S.selCSS)}</textarea></div>`,
+    innerHTML: `<div class="fg"><div class="fl">New innerHTML</div>
+      <textarea class="code" id="af-content">${esc(S.selHTML)}</textarea></div>`,
+    replace: `<div class="fg"><div class="fl">Replacement outerHTML</div>
+      <textarea class="code" id="af-content" placeholder="&lt;div class=&quot;...&quot;&gt;...&lt;/div&gt;"></textarea></div>`,
+    insert: `<div class="fg"><div class="fl">Position</div>
+      <select class="si" id="af-pos"><option value="afterend">After element</option><option value="beforebegin">Before element</option><option value="afterbegin">Inside, at start</option><option value="beforeend">Inside, at end</option></select></div>
+      <div class="fg"><div class="fl">HTML to Insert</div>
+      <textarea class="code" id="af-content" placeholder="&lt;div&gt;New content...&lt;/div&gt;"></textarea></div>`,
+    remove: `<div style="font-size:11px;color:var(--muted);padding:6px 0">Removes <code style="color:var(--red);font-family:var(--mono)">${esc(sel)}</code> from the DOM on patch apply.</div>`,
+    attr: `<div class="fg"><div class="fl">Attribute</div><input class="si" id="af-attr" placeholder="e.g. style, class, data-x"></div>
+      <div class="fg"><div class="fl">Value</div><input class="si" id="af-attrv" placeholder="attribute value"></div>`
+  };
+  f.innerHTML = (templates[action] || '') + '<div style="height:4px"></div>';
+}
+
+function addFromInspector() {
+  const action = document.getElementById('action-sel').value;
+  const sel = S.selSel;
+  if (!sel) { notif('Select an element first', true); return; }
+
+  let entry = { id: uid(), selector: sel };
+  if (action === 'css') {
+    const css = document.getElementById('af-css')?.value?.trim() || '';
+    if (!css) { notif('Enter some CSS', true); return; }
+    entry = { ...entry, type:'css', css };
+  } else if (action === 'innerHTML' || action === 'replace') {
+    entry = { ...entry, type:'html', action, content: document.getElementById('af-content')?.value || '' };
+  } else if (action === 'insert') {
+    entry = { ...entry, type:'html', action, content: document.getElementById('af-content')?.value||'', position: document.getElementById('af-pos')?.value||'afterend' };
+  } else if (action === 'remove') {
+    entry = { ...entry, type:'html', action:'remove', content:'' };
+  } else if (action === 'attr') {
+    const attr = document.getElementById('af-attr')?.value?.trim() || '';
+    const val = document.getElementById('af-attrv')?.value || '';
+    if (!attr) { notif('Enter attribute name', true); return; }
+    entry = { ...entry, type:'html', action:'attr', content: attr + '=' + val };
+  }
+
+  S.entries.push(entry);
+  rEntries(); rJSON();
+  notif('Entry added ✓');
+  ST('ent');
+}
+
+/* ═══════════════════════════════════════
+   ENTRIES
+═══════════════════════════════════════ */
+function rEntries() {
+  const list = document.getElementById('ent-list');
+  const noEnt = document.getElementById('no-ent');
+  const ec = document.getElementById('ec');
+  const n = S.entries.length;
+  ec.textContent = n ? `(${n})` : '';
+  noEnt.style.display = n ? 'none' : 'block';
+
+  list.innerHTML = S.entries.map(e => {
+    const typeLabel = e.type==='css'?'css':e.type==='js'?'js':(e.action||'html');
+    const typeCls = e.type==='css'?'css':e.type==='js'?'js':e.action==='attr'?'attr':'html';
+    const label = e.type==='css' ? (e.css||'').split('\n')[0].slice(0,60) :
+                  e.type==='js'  ? (e.js||'').slice(0,60) :
+                  (e.selector||'');
+    const sub = e.type==='css' ? (e.selector||'(global CSS)') :
+                e.type==='js'  ? 'JS snippet' :
+                e.action + (e.content ? ' → ' + e.content.slice(0,45) : '');
+    return `<div class="ecard">
+      <span class="etag ${typeCls}">${esc(typeLabel)}</span>
+      <div class="ebody">
+        <div class="elabel">${esc(label)}</div>
+        <div class="esub">${esc(sub)}</div>
+      </div>
+      <button class="edel" onclick="delEntry('${e.id}')" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function delEntry(id) {
+  S.entries = S.entries.filter(e => e.id !== id);
+  rEntries(); rJSON();
+  notif('Removed');
+}
+
+/* ═══════════════════════════════════════
+   QUICK-ADD MODAL
+═══════════════════════════════════════ */
+let mType = null;
+function quickAdd(type) {
+  mType = type;
+  document.getElementById('m-title').textContent = {css:'Add CSS Override',html:'Add HTML Patch',js:'Add JS Snippet'}[type] || 'Add Entry';
+  const body = document.getElementById('m-body');
+  if (type === 'css') {
+    body.innerHTML = `<div class="fg"><div class="fl">CSS</div><textarea class="code" id="m-css" placeholder=".selector {\n  property: value;\n}" style="min-height:120px"></textarea></div>`;
+  } else if (type === 'html') {
+    body.innerHTML = `<div class="fg"><div class="fl">Selector</div><input class="si" id="m-sel" placeholder="#id or .class"></div>
+      <div class="fg"><div class="fl">Action</div><select class="si" id="m-act"><option value="innerHTML">innerHTML</option><option value="replace">outerHTML</option><option value="insert">insert</option><option value="remove">remove</option><option value="attr">attr</option></select></div>
+      <div class="fg"><div class="fl">Content</div><textarea class="code" id="m-content" style="min-height:80px" placeholder="HTML or attr=value..."></textarea></div>`;
+  } else {
+    body.innerHTML = `<div class="fg"><div class="fl">JavaScript</div><textarea class="code js" id="m-js" style="min-height:130px" placeholder="(function(){\n  // your patch\n  window.myFn = function() { ... };\n})();"></textarea></div>`;
+  }
+  document.getElementById('modal-wrap').classList.add('o');
+}
+function closeModal() { document.getElementById('modal-wrap').classList.remove('o'); mType = null; }
+function confirmModal() {
+  let entry = { id: uid() };
+  if (mType==='css') {
+    const css = document.getElementById('m-css')?.value?.trim()||'';
+    if (!css) { notif('Enter CSS',true); return; }
+    entry = { ...entry, type:'css', css, selector:'' };
+  } else if (mType==='html') {
+    const sel = document.getElementById('m-sel')?.value?.trim()||'';
+    if (!sel) { notif('Enter a selector',true); return; }
+    entry = { ...entry, type:'html', selector:sel, action:document.getElementById('m-act')?.value||'innerHTML', content:document.getElementById('m-content')?.value||'' };
+  } else {
+    const js = document.getElementById('m-js')?.value?.trim()||'';
+    if (!js) { notif('Enter JS',true); return; }
+    entry = { ...entry, type:'js', js };
+  }
+  S.entries.push(entry);
+  rEntries(); rJSON(); closeModal();
+  notif('Entry added ✓');
+}
+
+/* ═══════════════════════════════════════
+   JSON
+═══════════════════════════════════════ */
+function buildPatch() {
+  const version = document.getElementById('pv')?.value?.trim() || '1.0.0';
+  const desc    = document.getElementById('pd')?.value?.trim() || '';
+  const cssBlocks = S.entries.filter(e=>e.type==='css').map(e=>e.css);
+  const htmlArr   = S.entries.filter(e=>e.type==='html').map(e=>{
+    const h = { action:e.action, selector:e.selector };
+    if (e.action!=='remove') h.content = e.content||'';
+    if (e.position) h.position = e.position;
+    return h;
+  });
+  const jsBlocks  = S.entries.filter(e=>e.type==='js').map(e=>e.js);
+  const patch = { version };
+  if (desc) patch.description = desc;
+  if (cssBlocks.length) patch.css = cssBlocks.join('\n\n');
+  if (htmlArr.length)   patch.html = htmlArr;
+  if (jsBlocks.length)  patch.js = jsBlocks.join('\n\n');
+  return patch;
+}
+
+function rJSON() {
+  const el = document.getElementById('json-pre');
+  if (!el) return;
+  const raw = JSON.stringify(buildPatch(), null, 2);
+  el.innerHTML = raw.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|-?\d+(?:\.\d*)?|true|false|null)/g, m => {
+    if (/^".*":$/.test(m)) return `<span style="color:#c792ea">${m}</span>`;
+    if (/^"/.test(m))      return `<span style="color:#c3e88d">${m}</span>`;
+    if (/\d/.test(m))      return `<span style="color:#f78c6c">${m}</span>`;
+    return `<span style="color:#ff9cac">${m}</span>`;
+  });
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(JSON.stringify(buildPatch(),null,2))
+    .then(()=>notif('Copied ✓')).catch(()=>notif('Copy failed',true));
+}
+
+function downloadPatch() {
+  const blob = new Blob([JSON.stringify(buildPatch(),null,2)],{type:'application/json'});
+  const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'patch.json'});
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  notif('Downloaded patch.json ✓');
+}
+
+/* ═══════════════════════════════════════
+   IMPORT
+═══════════════════════════════════════ */
+function importPatch() {
+  const inp = Object.assign(document.createElement('input'),{type:'file',accept:'.json,application/json'});
+  inp.onchange = e => {
+    const file = e.target.files?.[0]; if (!file) return;
+    new FileReader().readAsText(file);
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        let p = JSON.parse(ev.target.result);
+        if (Array.isArray(p)) { notif(`Array: merging ${p.length} patches`); p = mergePatchArr(p); }
+        loadIntoState(p);
+        notif('Patch imported ✓');
+        ST('ent');
+      } catch(err) { notif('Bad JSON: '+err.message, true); }
+    };
+    r.readAsText(file);
+  };
+  document.body.appendChild(inp); inp.click(); document.body.removeChild(inp);
+}
+
+function loadIntoState(patch) {
+  S.entries = []; nid = 1;
+  if (patch.version) document.getElementById('pv').value = patch.version;
+  if (patch.description) document.getElementById('pd').value = patch.description;
+  if (patch.css?.trim()) S.entries.push({ id:uid(), type:'css', css:patch.css, selector:'' });
+  (patch.html||[]).forEach(h => S.entries.push({ id:uid(), type:'html', selector:h.selector||'', action:h.action||'innerHTML', content:h.content||'', position:h.position }));
+  if (patch.js?.trim()) {
+    // Split multiple IIFEs if present
+    const parts = patch.js.split(/(?<=\}\s*\)\s*\(\s*\)\s*;?\s*)\n(?=\s*\()/).filter(s=>s.trim());
+    parts.length > 1
+      ? parts.forEach(js => S.entries.push({ id:uid(), type:'js', js:js.trim() }))
+      : S.entries.push({ id:uid(), type:'js', js:patch.js });
+  }
+  rEntries(); rJSON();
+}
+
+/* ═══════════════════════════════════════
+   MERGE
+═══════════════════════════════════════ */
+function mergePatchArr(patches) {
+  let css=[], html=[], js=[], version='1.0.0', desc='';
+  patches.forEach(p => {
+    if (p.version) version = p.version;
+    if (p.description) desc = p.description;
+    if (p.css) css.push(p.css);
+    (p.html||[]).forEach(h => {
+      const i = html.findIndex(x => x.selector===h.selector && x.action===h.action);
+      i >= 0 ? html[i] = h : html.push(h);
+    });
+    if (p.js) js.push(p.js);
+  });
+  return { version, description:desc, css:css.join('\n\n'), html, js:js.join('\n\n') };
+}
+
+function doMerge() {
+  const raw = document.getElementById('merge-in').value.trim();
+  if (!raw) { notif('Nothing to merge', true); return; }
+  try {
+    let incoming = raw.startsWith('[') ? JSON.parse(raw)
+      : raw.split(/\n\s*\n/).map(s=>JSON.parse(s.trim()));
+    if (!Array.isArray(incoming)) incoming = [incoming];
+    const merged = mergePatchArr([buildPatch(), ...incoming]);
+    loadIntoState(merged);
+    const resEl = document.getElementById('merge-res');
+    resEl.style.display = 'block';
+    resEl.textContent = `✓ Merged ${incoming.length+1} patches → v${merged.version} · ${S.entries.length} entries`;
+    notif(`Merged ${incoming.length+1} patches ✓`);
+    ST('json');
+  } catch(err) { notif('Merge failed: '+err.message, true); }
+}
+
+/* ═══════════════════════════════════════
+   PREVIEW (inject into live frame)
+═══════════════════════════════════════ */
+function previewPatch() {
+  try {
+    const doc = document.getElementById('game-frame').contentDocument;
+    if (!doc) { notif('Cannot access game frame', true); return; }
+    const patch = buildPatch();
+
+    // CSS
+    if (patch.css) {
+      let s = doc.getElementById('__pe_preview_css');
+      if (!s) { s = doc.createElement('style'); s.id='__pe_preview_css'; doc.head.appendChild(s); }
+      s.textContent = patch.css;
+    }
+    // HTML
+    (patch.html||[]).forEach(({ action, selector, content, position='afterend' }) => {
+      const el = doc.querySelector(selector);
+      if (!el) return;
+      if (action==='replace') el.outerHTML=content;
+      else if (action==='innerHTML') el.innerHTML=content;
+      else if (action==='insert') el.insertAdjacentHTML(position,content);
+      else if (action==='remove') el.remove();
+      else if (action==='attr') { const [a,v]=content.split('='); el.setAttribute(a.trim(),v?.trim()||''); }
+    });
+    // JS
+    if (patch.js) {
+      const s = doc.createElement('script');
+      s.textContent = patch.js;
+      doc.body.appendChild(s);
+    }
+    notif('Patch previewed in game frame ✓');
+  } catch(err) { notif('Preview failed: ' + err.message, true); }
+}
+
+/* ═══════════════════════════════════════
+   RUNTIME HISTORY
+═══════════════════════════════════════ */
+function loadHistory() {
+  try {
+    const patches = document.getElementById('game-frame').contentWindow?.__vf_patches;
+    if (!patches?.length) return;
+    document.getElementById('ph-list').innerHTML = patches.map(p => `
+      <div class="phi">
+        <span class="ph-v">v${p.version}</span>
+        <span class="ph-s ok">applied</span>
+        <span class="ph-d">${p.description||''}</span>
+        <span class="ph-t">${p.timing}ms</span>
+      </div>`).join('');
+  } catch(_) {}
+}
+
+/* ═══════════════════════════════════════
+   RESIZE HANDLE
+═══════════════════════════════════════ */
+(() => {
+  const h = document.getElementById('resize-h');
+  const rp = document.getElementById('right');
+  let drag=false, sx=0, sw=0;
+  h.addEventListener('mousedown', e => { drag=true; sx=e.clientX; sw=rp.offsetWidth; h.classList.add('d'); document.body.style.userSelect='none'; });
+  document.addEventListener('mousemove', e => { if (!drag) return; rp.style.flex=`0 0 ${Math.max(270,Math.min(580,sw+(sx-e.clientX)))}px`; });
+  document.addEventListener('mouseup', () => { if (!drag) return; drag=false; h.classList.remove('d'); document.body.style.userSelect=''; });
+})();
+
+/* ═══════════════════════════════════════
+   NOTIFY
+═══════════════════════════════════════ */
+let nt;
+function notif(msg, err=false) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.style.background = err ? '#ef4444' : 'var(--green)';
+  el.style.color = err ? '#fff' : '#000';
+  el.classList.add('on');
+  clearTimeout(nt);
+  nt = setTimeout(() => el.classList.remove('on'), 2400);
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+document.getElementById('game-frame').addEventListener('load', () => {
+  if (S.inspOn) injectInspector();
+  setTimeout(loadHistory, 800);
+});
+
+rJSON();
+</script>
+</body>
+</html>
