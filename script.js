@@ -129,6 +129,16 @@ const LAND_TERRAIN={
   volcanic:{  grass:{Spring:'#8a7040',Summer:'#7a5c30',Fall:'#b04020',Winter:'#704848'}, icon:'🌋', label:'Volcanic Ridge'},
 };
 
+/* ══ STOCK MARKET COMPANIES ══ */
+const CITY_COMPANIES=[
+  {ticker:'GHC',name:'GreenHarvest Corp',    icon:'🌿',desc:'Agricultural giant. Thrives in Spring & Summer.',   basePrice:120,strongSeasons:['Spring','Summer'],volatility:0.12},
+  {ticker:'SGB',name:'SunGold Beverages',    icon:'🍊',desc:'Premium drinks empire. Summer demand explodes.',    basePrice:85, strongSeasons:['Summer'],           volatility:0.18},
+  {ticker:'FFF',name:'FallFest Foods',       icon:'🎃',desc:'Seasonal snack powerhouse. Peak earnings in Fall.', basePrice:95, strongSeasons:['Fall'],             volatility:0.15},
+  {ticker:'IPR',name:'IcePeak Retail',       icon:'❄️', desc:'Winter shopping chain. Surges every cold season.', basePrice:110,strongSeasons:['Winter'],           volatility:0.14},
+  {ticker:'VTK',name:'ValleyTech Inc',       icon:'💻',desc:'Farmtech startup. High risk, high reward.',         basePrice:200,strongSeasons:[],                   volatility:0.30},
+  {ticker:'RBT',name:'RiverBank Trading',    icon:'🏦',desc:'Stable finance house. Consistent, low drama.',      basePrice:160,strongSeasons:['Spring','Summer','Fall','Winter'],volatility:0.05},
+];
+
 const XP_LEVELS=[0,80,200,400,700,1100,1600,2200,3000,4000];
 
 /* ══ SETTINGS ══ */
@@ -348,7 +358,8 @@ function initState(){
      yearEarned:0,achievements:[],market:{prices:{},history:{}},
      skills:{farming:{xp:0},watering:{xp:0},harvesting:{xp:0}},
      upgrades:{},landUpgrades:{home:{}},lands:{},cactusRain:false,
-     farms:{home:homeFarm},currentLand:'home'};
+     farms:{home:homeFarm},currentLand:'home',
+     company:null,stocks:{},stockMarket:{}};
 }
 function loadState(s){
   G=s;
@@ -387,6 +398,9 @@ function loadState(s){
   });
   // Ensure debtDays on all rented lands
   Object.values(G.lands||{}).forEach(l=>{if(l.debtDays===undefined)l.debtDays=0;});
+  if(!G.company&&G.company!==null)G.company=null;
+  if(!G.stocks)G.stocks={};
+  if(!G.stockMarket)G.stockMarket={};
 }
 
 /* ══ HELPERS ══ */
@@ -1153,6 +1167,21 @@ function buildMap(){
       </div>`;
     }
     h+='</div>';
+    // ── City Card ──
+  const _fLvMap=getLevel(G.skills?.farming?.xp||0);
+  h+=`<div class="land-card city-card" style="margin-top:6px">
+    <div class="land-card-top">
+      <div class="land-card-left">
+        <span class="land-em">🏙️</span>
+        <div><div class="land-name">City District <span class="land-fert" style="background:#6366f1;color:#fff;border-color:#4f46e5">FREE</span></div></div>
+      </div>
+    </div>
+    <div class="land-desc">The big city! Visit the Stock Exchange, create your own company, and trade shares every season.</div>
+    ${_fLvMap>=5
+      ?`<div class="land-btn-row"><button class="land-btn map-travel-btn city-travel-btn" onclick="travelTo('city')">🏙️ Visit City</button></div>`
+      :`<div class="city-lock-notice">🔒 Requires Farming Level 5 — you are Lv.${_fLvMap}</div>`
+    }
+  </div>`;
   });
 
   h+=`<div class="market-note" style="margin-top:4px">💡 <b>Land Tips:</b><br>Owned land is yours permanently. Rented land charges daily — miss 7 days' rent and all crops are seized by the landlord! Leave a rented plot anytime, debt forgiven.</div>`;
@@ -1163,6 +1192,8 @@ function buildMap(){
 /* ══ BUY / RENT / LEAVE LAND ══ */
 function buyLand(id){
   const plot=LAND_PLOTS[id];if(!plot)return;
+  const _fLvB=getLevel(G.skills?.farming?.xp||0);
+  if(_fLvB<5){toast('🔒 Farming Level 5 required to buy land! (You are Lv.'+_fLvB+')','error',3200);snd('error');return;}
   const land=G.lands[id]||{};
   if(land.owned){toast('You already own this land!','warn');return;}
   if(G.gold<plot.buyPrice){toast('Need '+plot.buyPrice+'g to buy!','error');snd('error');return;}
@@ -1175,6 +1206,8 @@ function buyLand(id){
 }
 function rentLand(id){
   const plot=LAND_PLOTS[id];if(!plot)return;
+  const _fLvR=getLevel(G.skills?.farming?.xp||0);
+  if(_fLvR<5){toast('🔒 Farming Level 5 required to rent land! (You are Lv.'+_fLvR+')','error',3200);snd('error');return;}
   const land=G.lands[id]||{};
   if(land.owned||land.rented){toast('Already acquired!','warn');return;}
   if(G.gold<plot.rentDay){toast('Need '+plot.rentDay+'g for first day\'s rent!','error');snd('error');return;}
@@ -1270,7 +1303,7 @@ function doSleep(){
       });
       delete G._seizedPlots;
     }
-    if(G.si!==prevSi){msgs.push({m:['🌸','☀️','🍂','❄️'][G.si]+' '+season()+' has arrived!',t:'warn'});showSeasonBanner();if(season()==='Winter')tickMarket();}
+    if(G.si!==prevSi){msgs.push({m:['🌸','☀️','🍂','❄️'][G.si]+' '+season()+' has arrived!',t:'warn'});showSeasonBanner();if(season()==='Winter')tickMarket();tickStockMarket();}
     msgs.push({m:'🌅 Good morning, '+CU+'! Day '+G.day,t:'info'});
     msgs.forEach(({m,t},i)=>setTimeout(()=>toast(m,t,3200),i*600));
     startClock();render();
@@ -1439,8 +1472,18 @@ function closeMapScreen(){
 /* ══ TRAVEL / TELEPORT ══ */
 function travelTo(landId){
   if(landId===G.currentLand){closeMapScreen();toast('You\'re already here! 🏡','info');return;}
-  // Verify access
+  // City is a special non-farm destination
+  if(landId==='city'){
+    const _fLvC=getLevel(G.skills?.farming?.xp||0);
+    if(_fLvC<5){toast('🔒 Farming Level 5 required to visit the City! (You are Lv.'+_fLvC+')','error',3200);snd('error');return;}
+    closeMapScreen();
+    _travelAnimThenCity();
+    return;
+  }
+  // Regular farm lands — verify access and farming level
   if(landId!=='home'){
+    const _fLvT=getLevel(G.skills?.farming?.xp||0);
+    if(_fLvT<5){toast('🔒 Farming Level 5 required to travel to other lands! (You are Lv.'+_fLvT+')','error',3200);snd('error');return;}
     const l=G.lands?.[landId];
     if(!l||(!l.owned&&!l.rented)){toast('You don\'t own or rent this land!','error');snd('error');return;}
   }
@@ -1562,6 +1605,20 @@ function buildMapFullscreen(){
       </div>`;
     }
     landHtml+='</div>';
+    const _fLvMF=getLevel(G.skills?.farming?.xp||0);
+  landHtml+=`<div class="land-card city-card" style="margin-top:6px">
+    <div class="land-card-top">
+      <div class="land-card-left">
+        <span class="land-em">🏙️</span>
+        <div><div class="land-name">City District <span class="land-fert" style="background:#6366f1;color:#fff;border-color:#4f46e5">FREE</span></div></div>
+      </div>
+    </div>
+    <div class="land-desc">Visit the Valley Stock Exchange. Invest in companies, launch your own, and collect dividends every season change.</div>
+    ${_fLvMF>=5
+      ?`<div class="land-btn-row"><button class="land-btn map-travel-btn city-travel-btn" id="mfbl-city">🏙️ Visit City</button></div>`
+      :`<div class="city-lock-notice">🔒 Requires Farming Level 5 — you are Lv.${_fLvMF}</div>`
+    }
+  </div>`;
   });
   landHtml+=`<div class="market-note" style="margin-top:8px;margin-bottom:16px">💡 <b>Land Tips:</b><br>Owned land is yours permanently. Rented land charges daily — miss 7 days' rent and crops get seized by the landlord! Leave a rented plot anytime, debt forgiven.</div>`;
 
@@ -1591,6 +1648,8 @@ function buildMapFullscreen(){
     if(bl)bl.addEventListener('click',()=>{buyLand(id);buildMapFullscreen();});
     if(rl)rl.addEventListener('click',()=>{rentLand(id);buildMapFullscreen();});
     if(ll)ll.addEventListener('click',()=>{leaveLand(id);buildMapFullscreen();});
+    const cityBtn=document.getElementById('mfbl-city');
+    if(cityBtn)cityBtn.addEventListener('click',()=>travelTo('city'));
   });
 }
 function setTool(t){
@@ -1875,6 +1934,345 @@ function spawnAmbientParticle(){
 function startAmbient(){
   clearInterval(ambientInt);
   ambientInt=setInterval(spawnAmbientParticle,1600);
+}
+
+/* ══ CITY / STOCK EXCHANGE ══ */
+
+function _travelAnimThenCity(){
+  const overlay=document.getElementById('teleport-overlay');
+  document.getElementById('tp-em').textContent='🏙️';
+  document.getElementById('tp-title').textContent='Heading to the City...';
+  document.getElementById('tp-sub').textContent='📈 Checking the markets...';
+  document.getElementById('tp-tip').textContent='Buy low, sell high — and maybe list your own company!';
+  overlay.classList.add('tp-show');
+  const bar=document.getElementById('tp-bar');
+  bar.style.width='0%';bar.style.transition='none';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    bar.style.transition='width 1.55s cubic-bezier(.4,0,.2,1)';
+    bar.style.width='100%';
+  }));
+  setTimeout(()=>{
+    bar.style.transition='none';
+    overlay.classList.remove('tp-show');
+    openCityScreen();
+  },1900);
+}
+
+function openCityScreen(){
+  _ensureSM();
+  const el=document.getElementById('city-screen');
+  if(el)el.classList.add('city-open');
+  _updateCityGold();
+  setCityTab('market');
+  paused=true;
+}
+
+function closeCityScreen(){
+  const el=document.getElementById('city-screen');
+  if(el)el.classList.remove('city-open');
+  paused=false;
+}
+
+function setCityTab(tab){
+  document.querySelectorAll('.city-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.ctab===tab));
+  renderCityScreen(tab);
+}
+
+function _updateCityGold(){
+  const el=document.getElementById('city-gold-disp');
+  if(el)el.textContent='💰 '+G.gold+'g';
+}
+
+function _ensureSM(){
+  if(!G.stockMarket)G.stockMarket={};
+  CITY_COMPANIES.forEach(c=>{
+    if(!G.stockMarket[c.ticker])
+      G.stockMarket[c.ticker]={price:c.basePrice,history:[c.basePrice],lastSeason:season()};
+  });
+  if(G.company&&!G.stockMarket[G.company.ticker])
+    G.stockMarket[G.company.ticker]={price:G.company.sharePrice,history:[G.company.sharePrice],lastSeason:season()};
+}
+
+function tickStockMarket(){
+  _ensureSM();
+  const s=season();
+  CITY_COMPANIES.forEach(c=>{
+    const mkt=G.stockMarket[c.ticker];if(!mkt)return;
+    if(mkt.lastSeason===s)return; // only tick once per season
+    let chg=((Math.random()-0.47)*c.volatility*2);
+    if(c.strongSeasons.includes(s))chg+=0.07+Math.random()*0.09;
+    else if(c.strongSeasons.length>0)chg-=0.02+Math.random()*0.04;
+    const np=Math.max(8,Math.round(mkt.price*(1+chg)));
+    mkt.history.push(np);if(mkt.history.length>10)mkt.history.shift();
+    mkt.price=np;mkt.lastSeason=s;
+  });
+  if(G.company){
+    const mkt=G.stockMarket[G.company.ticker];
+    if(mkt&&mkt.lastSeason!==s){
+      const bonus=Math.min(0.20,(G.yearEarned||0)/60000);
+      const chg=((Math.random()-0.42)*0.16)+bonus;
+      const np=Math.max(5,Math.round(mkt.price*(1+chg)));
+      mkt.history.push(np);if(mkt.history.length>10)mkt.history.shift();
+      mkt.price=np;mkt.lastSeason=s;
+      G.company.sharePrice=np;
+      if(!G.company.history)G.company.history=[];
+      G.company.history.push({season:s,year:G.year,price:np,earned:G.yearEarned||0});
+    }
+  }
+  toast('📊 Stock markets updated for '+s+'!','info',2800);
+}
+
+function _miniChart(history){
+  if(!history||history.length<2)return'';
+  const max=Math.max(...history),min=Math.min(...history),range=max-min||1;
+  const W=64,H=24;
+  const pts=history.map((v,i)=>{
+    const x=Math.round((i/(history.length-1))*W);
+    const y=Math.round(H-((v-min)/range)*(H-2)+1);
+    return x+','+y;
+  }).join(' ');
+  const up=history[history.length-1]>=history[0];
+  const col=up?'#22c55e':'#ef4444';
+  const last=pts.split(' ').pop().split(',');
+  return`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="overflow:visible;display:block">
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="${col}"/>
+  </svg>`;
+}
+
+function renderCityScreen(tab){
+  const body=document.getElementById('city-body');if(!body)return;
+  _ensureSM();_updateCityGold();
+  if(tab==='market')body.innerHTML=_renderMarket();
+  else if(tab==='portfolio')body.innerHTML=_renderPortfolio();
+  else if(tab==='company')body.innerHTML=_renderCompany();
+  // Bind trade buttons via event delegation
+  body.querySelectorAll('[data-buy-ticker]').forEach(btn=>
+    btn.addEventListener('click',()=>buyStock(btn.dataset.buyTicker,+btn.dataset.qty||1)));
+  body.querySelectorAll('[data-sell-ticker]').forEach(btn=>
+    btn.addEventListener('click',()=>sellStock(btn.dataset.sellTicker,+btn.dataset.qty||1)));
+}
+
+function _renderMarket(){
+  const s=season();
+  const all=[...CITY_COMPANIES];
+  if(G.company&&!all.find(c=>c.ticker===G.company.ticker))
+    all.push({ticker:G.company.ticker,name:G.company.name,icon:G.company.icon||'🏢',
+              desc:G.company.desc||'',basePrice:G.company.sharePrice,strongSeasons:[],volatility:0.15});
+
+  let h=`<div class="city-market-header">
+    <div class="city-market-title">📊 Stock Exchange</div>
+    <div class="city-season-badge">${['🌸','☀️','🍂','❄️'][G.si]} ${s}</div>
+  </div>
+  <div class="city-market-note">📈 Markets refresh every season. Strong seasons boost a company's stock — weak ones hurt it. Your company grows with your crop earnings!</div>`;
+
+  all.forEach(c=>{
+    const mkt=G.stockMarket[c.ticker]||{price:c.basePrice,history:[c.basePrice]};
+    const held=(G.stocks&&G.stocks[c.ticker]?.shares)||0;
+    const prev=mkt.history.length>=2?mkt.history[mkt.history.length-2]:mkt.price;
+    const rawPct=((mkt.price-prev)/prev)*100;
+    const pct=Math.abs(rawPct)<0.5?0:Math.round(rawPct);
+    const up=rawPct>=0;
+    const strong=c.strongSeasons&&c.strongSeasons.includes(s);
+    const isMine=G.company&&G.company.ticker===c.ticker;
+    const seasonTags=SEASONS.map(se=>`<span class="season-perf-tag${c.strongSeasons?.includes(se)?' strong':''}">${['🌸','☀️','🍂','❄️'][SEASONS.indexOf(se)]} ${se}</span>`).join('');
+    h+=`<div class="stock-card${isMine?' stock-card-mine':''}">
+      <div class="stock-top">
+        <div class="stock-left">
+          <span class="stock-icon">${c.icon}</span>
+          <div>
+            <div class="stock-name">${c.name}${strong?' <span class="stock-hot">🔥 HOT</span>':''}${isMine?' <span class="stock-mine-tag">YOUR CO.</span>':''}</div>
+            <div class="stock-ticker">${c.ticker}</div>
+            <div class="stock-desc">${c.desc}</div>
+            <div class="season-perf-row">${seasonTags}</div>
+          </div>
+        </div>
+        <div class="stock-right">
+          ${_miniChart(mkt.history)}
+          <div class="stock-price">${mkt.price}g</div>
+          <div class="stock-pct ${up?'up':'down'}">${pct===0?'—':((up?'▲':'▼')+Math.abs(pct)+'%')}</div>
+        </div>
+      </div>
+      <div class="stock-held">Holding: <b>${held}</b> share${held!==1?'s':''}${held>0?' · Value: <b>'+(held*mkt.price)+'g</b>':''}</div>
+      <div class="stock-actions">
+        <button class="stock-btn stock-btn-buy" data-buy-ticker="${c.ticker}" data-qty="1" ${G.gold>=mkt.price?'':'disabled'}>Buy 1 · ${mkt.price}g</button>
+        <button class="stock-btn stock-btn-buy" data-buy-ticker="${c.ticker}" data-qty="5" ${G.gold>=mkt.price*5?'':'disabled'}>Buy 5 · ${mkt.price*5}g</button>
+        <button class="stock-btn stock-btn-sell" data-sell-ticker="${c.ticker}" data-qty="1" ${held>=1?'':'disabled'}>Sell 1 · ${mkt.price}g</button>
+        <button class="stock-btn stock-btn-sell" data-sell-ticker="${c.ticker}" data-qty="${held}" ${held>0?'':'disabled'}>Sell All${held>0?' · '+(held*mkt.price)+'g':''}</button>
+      </div>
+    </div>`;
+  });
+  return h;
+}
+
+function _renderPortfolio(){
+  if(!G.stocks)G.stocks={};
+  const held=Object.entries(G.stocks).filter(([,p])=>p.shares>0);
+  if(!held.length)return`<div class="city-empty"><div class="city-empty-em">📭</div><div>No shares yet</div><div style="font-size:11px;margin-top:4px;font-weight:400">Go to the Market tab and start investing!</div></div>`;
+  const all=[...CITY_COMPANIES];
+  if(G.company&&!all.find(c=>c.ticker===G.company.ticker))
+    all.push({ticker:G.company.ticker,name:G.company.name,icon:G.company.icon||'🏢'});
+  let totalVal=0,totalCost=0;
+  let h=`<div class="city-market-header"><div class="city-market-title">🎒 My Portfolio</div></div><div class="portfolio-list">`;
+  held.forEach(([ticker,pos])=>{
+    const mkt=G.stockMarket[ticker];if(!mkt)return;
+    const co=all.find(c=>c.ticker===ticker)||{name:ticker,icon:'📈'};
+    const curVal=pos.shares*mkt.price,cost=pos.shares*(pos.avgPrice||mkt.price);
+    const pnl=curVal-cost,pct=cost>0?Math.round((pnl/cost)*100):0;
+    totalVal+=curVal;totalCost+=cost;
+    h+=`<div class="portfolio-card">
+      <div class="port-top">
+        <span class="stock-icon">${co.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div class="stock-name">${co.name}</div>
+          <div class="stock-ticker">${ticker} · ${pos.shares} share${pos.shares!==1?'s':''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="stock-price">${curVal}g</div>
+          <div class="stock-pct ${pnl>=0?'up':'down'}">${pnl>=0?'▲':'▼'}${Math.abs(pct)}% (${pnl>=0?'+':''}${Math.round(pnl)}g)</div>
+        </div>
+      </div>
+      <div class="stock-held">Avg buy price: ${pos.avgPrice||mkt.price}g · Now: ${mkt.price}g/share</div>
+      <div class="stock-actions">
+        <button class="stock-btn stock-btn-sell" data-sell-ticker="${ticker}" data-qty="1">Sell 1 · ${mkt.price}g</button>
+        <button class="stock-btn stock-btn-sell" data-sell-ticker="${ticker}" data-qty="${pos.shares}">Sell All · ${pos.shares*mkt.price}g</button>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+  const totalPnl=totalVal-totalCost,totalPct=totalCost>0?Math.round((totalPnl/totalCost)*100):0;
+  h+=`<div class="portfolio-summary">
+    <div class="port-sum-row"><span>Portfolio Value</span><span class="stock-price">${totalVal}g</span></div>
+    <div class="port-sum-row"><span>Total Invested</span><span>${totalCost}g</span></div>
+    <div class="port-sum-row"><span>Total P&amp;L</span><span class="stock-pct ${totalPnl>=0?'up':'down'}">${totalPnl>=0?'+':''}${Math.round(totalPnl)}g (${totalPct}%)</span></div>
+  </div>`;
+  return h;
+}
+
+function _renderCompany(){
+  if(!G.company){
+    return`<div class="city-company-form">
+      <div class="city-market-header"><div class="city-market-title">🏢 Launch Your Company</div></div>
+      <div class="city-market-note">List your farming empire on the Valley Stock Exchange! Your share price rises automatically with your crop earnings every season. Others can buy into your success!</div>
+      <div class="city-form-group">
+        <label class="city-form-label">Company Name</label>
+        <input class="city-form-input" id="co-name" placeholder="e.g. MacDonald Farms Ltd." maxlength="32">
+      </div>
+      <div class="city-form-group">
+        <label class="city-form-label">Ticker Symbol (2–4 capital letters)</label>
+        <input class="city-form-input" id="co-ticker" placeholder="e.g. MDF" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">
+      </div>
+      <div class="city-form-group">
+        <label class="city-form-label">Company Icon</label>
+        <div class="city-icon-pick" id="co-icon-pick">
+          ${['🏢','🌾','🚜','🌿','🍎','🧑‍🌾','🌻','🏚️','🌽','🥕','🏆','🌱'].map((em,i)=>`<button class="icon-pick-btn${i===0?' sel':''}" onclick="document.querySelectorAll('.icon-pick-btn').forEach(b=>b.classList.remove('sel'));this.classList.add('sel');document.getElementById('co-icon').value='${em}'">${em}</button>`).join('')}
+          <input type="hidden" id="co-icon" value="🏢">
+        </div>
+      </div>
+      <div class="city-form-group">
+        <label class="city-form-label">Tagline / Description</label>
+        <input class="city-form-input" id="co-desc" placeholder="e.g. Premium organic Valley produce" maxlength="60">
+      </div>
+      <div class="city-form-group">
+        <label class="city-form-label">Initial Share Price (10 – 500g)</label>
+        <input class="city-form-input" id="co-price" type="number" min="10" max="500" value="100">
+      </div>
+      <div id="co-error" class="city-form-error" style="display:none"></div>
+      <button class="city-form-submit" onclick="createCompany()">📈 List on Exchange</button>
+    </div>`;
+  }
+  const mkt=G.stockMarket[G.company.ticker]||{price:G.company.sharePrice,history:[G.company.sharePrice]};
+  const prev=mkt.history.length>=2?mkt.history[mkt.history.length-2]:mkt.price;
+  const pct=Math.round(((mkt.price-prev)/prev)*100);
+  const up=pct>=0;
+  const hist=G.company.history||[];
+  return`<div class="city-market-header">
+    <div class="city-market-title">${G.company.icon||'🏢'} ${G.company.name}</div>
+    <div class="city-season-badge">${G.company.ticker}</div>
+  </div>
+  <div class="company-dashboard">
+    <div class="co-stat-row">
+      <div class="co-stat"><div class="co-stat-val">${mkt.price}g</div><div class="co-stat-lab">Share Price</div></div>
+      <div class="co-stat"><div class="co-stat-val ${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(pct)}%</div><div class="co-stat-lab">This Season</div></div>
+      <div class="co-stat"><div class="co-stat-val">${G.company.sharesIssued||1000}</div><div class="co-stat-lab">Shares Issued</div></div>
+      <div class="co-stat"><div class="co-stat-val">${Math.round((G.company.sharesIssued||1000)*mkt.price/1000)}k g</div><div class="co-stat-lab">Mkt Cap</div></div>
+    </div>
+    <div class="co-chart-wrap">
+      <svg viewBox="0 0 200 40" width="200" height="40" style="overflow:visible;width:100%;height:50px">
+        ${(()=>{const h=mkt.history;if(h.length<2)return'';const max=Math.max(...h),min=Math.min(...h),range=max-min||1;const pts=h.map((v,i)=>`${Math.round((i/(h.length-1))*198)+1},${Math.round(38-((v-min)/range)*36+1)}`).join(' ');const col=h[h.length-1]>=h[0]?'#22c55e':'#ef4444';const last=pts.split(' ').pop().split(',');return`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="${col}"/>`})()}
+      </svg>
+      <div class="co-chart-label">Share price history (last ${mkt.history.length} seasons)</div>
+    </div>
+    <div class="co-history">
+      <div class="co-hist-title">📜 Seasonal Record</div>
+      ${hist.length===0
+        ?'<div style="font-size:11px;color:var(--text-muted);padding:6px 0">Sleep through a season change to record your first entry!</div>'
+        :hist.slice(-6).reverse().map(entry=>{
+          const si=SEASONS.indexOf(entry.season);
+          return`<div class="co-hist-row">
+            <span>${['🌸','☀️','🍂','❄️'][si]||'📅'} ${entry.season} Yr.${entry.year||G.year}</span>
+            <span>${entry.price}g/share</span>
+            <span style="font-size:10px;color:var(--text-muted)">Earnings: ${entry.earned}g</span>
+          </div>`;}).join('')}
+    </div>
+    <div class="city-market-note">💡 Farm more crops to boost earnings — your share price grows with your seasonal profits!</div>
+  </div>`;
+}
+
+function buyStock(ticker,qty){
+  if(!G.stocks)G.stocks={};
+  const mkt=G.stockMarket?.[ticker];
+  if(!mkt){toast('Unknown ticker!','error');return;}
+  const cost=mkt.price*qty;
+  if(G.gold<cost){toast('Need '+cost+'g to buy '+qty+' share'+(qty!==1?'s':'')+'!','error');snd('error');return;}
+  G.gold-=cost;
+  if(!G.stocks[ticker])G.stocks[ticker]={shares:0,avgPrice:mkt.price};
+  const pos=G.stocks[ticker];
+  const total=pos.shares+qty;
+  pos.avgPrice=Math.round((pos.avgPrice*pos.shares+mkt.price*qty)/total);
+  pos.shares=total;
+  snd('buy');
+  toast('📈 Bought '+qty+'× '+ticker+' for '+cost+'g!','success',2800);
+  const ct=document.querySelector('.city-tab-btn.active');
+  renderCityScreen(ct?ct.dataset.ctab:'market');
+}
+
+function sellStock(ticker,qty){
+  if(!G.stocks||!G.stocks[ticker]||G.stocks[ticker].shares<qty){
+    toast('Not enough shares to sell!','error');snd('error');return;
+  }
+  const mkt=G.stockMarket?.[ticker];
+  if(!mkt){toast('Unknown ticker!','error');return;}
+  const earned=mkt.price*qty;
+  G.stocks[ticker].shares-=qty;
+  G.gold+=earned;
+  G.stats.earned=(G.stats.earned||0)+earned;
+  snd('coin');
+  toast('💰 Sold '+qty+'× '+ticker+' for '+earned+'g!','success',2800);
+  const ct=document.querySelector('.city-tab-btn.active');
+  renderCityScreen(ct?ct.dataset.ctab:'market');
+  renderHUD();
+}
+
+function createCompany(){
+  const name=(document.getElementById('co-name')?.value||'').trim();
+  const ticker=(document.getElementById('co-ticker')?.value||'').trim().toUpperCase();
+  const icon=document.getElementById('co-icon')?.value||'🏢';
+  const desc=(document.getElementById('co-desc')?.value||'').trim()||'A proud Valley Farm enterprise.';
+  const price=parseInt(document.getElementById('co-price')?.value)||100;
+  const errEl=document.getElementById('co-error');
+  errEl.style.display='none';
+  if(!name){errEl.textContent='Enter a company name!';errEl.style.display='block';return;}
+  if(ticker.length<2||ticker.length>4||!/^[A-Z]+$/.test(ticker)){errEl.textContent='Ticker must be 2–4 capital letters (e.g. MDF).';errEl.style.display='block';return;}
+  if(CITY_COMPANIES.find(c=>c.ticker===ticker)){errEl.textContent='That ticker is already used by an NPC company!';errEl.style.display='block';return;}
+  if(price<10||price>500){errEl.textContent='Share price must be between 10 and 500g.';errEl.style.display='block';return;}
+  G.company={name,ticker,icon,desc,sharePrice:price,sharesIssued:1000,founded:season()+' Yr.'+G.year,history:[]};
+  if(!G.stockMarket)G.stockMarket={};
+  G.stockMarket[ticker]={price,history:[price],lastSeason:season()};
+  snd('levelup');
+  toast('🎉 '+name+' ('+ticker+') is now listed on the Valley Stock Exchange!','success',4000);
+  setTimeout(()=>toast('💡 Your share price rises automatically with your crop earnings each season!','info',4000),2000);
+  renderCityScreen('company');
 }
 
 /* ══ LAUNCH ══ */
