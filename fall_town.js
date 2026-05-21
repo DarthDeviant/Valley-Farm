@@ -20,8 +20,14 @@
   'use strict';
 
   /* ── Wait for the game engine to be ready ── */
+  /* NOTE: G is always defined (let G = {} in script.js), so we must also
+     check G.si is a valid number — that only becomes true after initState()
+     or loadState() runs on login. Without this, boot() fires immediately at
+     page load with G = {} (season() returns undefined, openTownScreen not
+     yet assigned), causing the three init bugs fixed in falltownpatch.json. */
   function whenReady(fn) {
-    if (typeof G !== 'undefined' && typeof toast === 'function' &&
+    if (typeof G !== 'undefined' && typeof G.si === 'number' &&
+        typeof toast === 'function' &&
         typeof snd === 'function' && typeof season === 'function') {
       fn();
     } else {
@@ -1341,6 +1347,25 @@ body.retro .quest-submit-btn,body.retro .recipe-cook-btn,body.retro .preserve-bt
     initTownState();
     injectCSS();
     injectHTML();
+
+    /* Hook initState & loadState so town data is always properly initialised
+       on every login — not just the first one. boot() only fires once, so
+       subsequent logout → new-farm flows would otherwise skip initTownState. */
+    const _origInitState = window.initState;
+    if (typeof _origInitState === 'function') {
+      window.initState = function (...args) {
+        _origInitState.apply(this, args);
+        initTownState();
+      };
+    }
+    const _origLoadState = window.loadState;
+    if (typeof _origLoadState === 'function') {
+      window.loadState = function (...args) {
+        _origLoadState.apply(this, args);
+        initTownState();
+      };
+    }
+
     hookSleep();
     hookRenderHUD();
     updateAtmosphere();
