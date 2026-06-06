@@ -1,3 +1,11 @@
+/* ═══════════════════════════════════════════════════════
+   tbu5.js — Merged Patch Bundle
+   Generated: 2026-06-06
+   Sources:   patch_v3.js, patch_v3b.js
+   ═══════════════════════════════════════════════════════ */
+
+
+/* ──────────────────────── patch_v3.js ──────────────────────── */
 /* ═══════════════════════════════════════════════════════════════════════
    VALLEY FARM — PATCH v3.0  (patch_v3.js)
    ─────────────────────────────────────────────────────────────────────
@@ -898,4 +906,464 @@ body.retro .chub-title { color: #ffd700; font-size: 14px; }
     '  · City button → hub menu (Stock Exchange / Jobs Board)\n' +
     '  · Jobs Board added as city screen tab\n' +
     '  · Jobs removed from Shop tab');
+})();
+
+
+/* ──────────────────────── patch_v3b.js ──────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   VALLEY FARM — PATCH v3b  (patch_v3b.js)
+   ─────────────────────────────────────────────────────────────────────
+   Load order: after patch_v3.js
+
+   Fixes / changes on top of patch_v3:
+   1. HOE PICKER TOGGLE  — Clicking ⛏ Hoe again while picker is open
+                           now CLOSES it (toggle, not re-open).
+
+   2. CITY HUB REMOVED   — City button goes straight to the City screen
+                           (original behaviour).  Jobs Board tab is
+                           still added to the City screen tabs.
+
+   3. HOE TILE PREVIEW   — With size > 1 selected: first click on a
+                           tile shows a white-highlight preview box of
+                           the exact area that would be tilled.
+                           Clicking any highlighted tile confirms and
+                           tills.  Clicking elsewhere moves the preview.
+                           1×1 still tills immediately (no preview).
+
+   4. RESTORE TILE GRID  — Undoes the tbu.js seamless-grass CSS so tiles
+                           have their original borders, rounded corners,
+                           and 3px gaps.  Micro-variation (gv*) classes
+                           are also removed after every render.
+
+   5. TOAST OPACITY 72%  — Toast notification backgrounds and the
+                           achievement popup background are set to
+                           72 % opacity via rgba().
+═══════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ────────────────────────────────────────────────────────────────────
+     SECTION 0  CSS
+  ──────────────────────────────────────────────────────────────────── */
+  var style = document.createElement('style');
+  style.id = 'vf-patchv3b-css';
+  style.textContent = `
+
+/* ══ RESTORE TILE GRID LOOK ═════════════════════════════════════════
+   Counter the tbu.js bigupdate-grass-css rules with !important.
+   ─────────────────────────────────────────────────────────────────── */
+#farm-grid {
+  gap: 3px !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+#farm-wrap {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: auto !important;
+}
+.tile {
+  border: 2px solid rgba(0,0,0,.13) !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+  /* Remove the inset-shadow trick tbu adds on tilled tiles */
+}
+.tile[data-tilled="1"] {
+  box-shadow: none !important;
+  border-radius: 7px !important;
+}
+.tile[data-tilled="1"][data-watered="1"] {
+  box-shadow: none !important;
+}
+.tile[data-deco="1"] {
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+.tile:hover {
+  filter: brightness(1.25) !important;
+  transform: scale(1.1) !important;
+  z-index: 5;
+  border-color: rgba(255,255,255,.75) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.18) !important;
+}
+/* cancel any gv-class brightness/sat filters */
+.gv0,.gv1,.gv2,.gv3,.gv4 { filter: none !important; }
+.gv0:hover,.gv1:hover,.gv2:hover,.gv3:hover,.gv4:hover {
+  filter: brightness(1.25) !important;
+}
+.tile-tree {
+  border: 2px solid rgba(0,0,0,.13) !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+/* Restore original ready-pulse */
+.tile-ready {
+  animation: readypulse 1.4s ease-in-out infinite !important;
+  filter: none !important;
+}
+@keyframes readypulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(250,204,21,.7) !important; }
+  50%      { box-shadow: 0 0 12px 6px rgba(250,204,21,.22) !important; }
+}
+/* Restore grass-deco opacity */
+.grass-deco { opacity: .22 !important; font-size: 13px !important; filter: none !important; }
+
+/* Mobile: keep original CSS scaling (from style.css) */
+@media (max-width: 680px) {
+  #farm-grid { gap: 2px !important; }
+  .tile, .tile-tree { width: 45px !important; height: 45px !important; font-size: 19px !important; border-radius: 5px !important; }
+}
+@media (max-width: 400px) {
+  .tile, .tile-tree { width: 38px !important; height: 38px !important; font-size: 16px !important; }
+}
+
+/* ══ HOE TILE PREVIEW ═══════════════════════════════════════════════ */
+.hoe-pending-tile {
+  outline: 3px solid rgba(255,255,255,.88) !important;
+  outline-offset: -2px !important;
+  background-color: rgba(255,255,255,.30) !important;
+  filter: brightness(1.15) !important;
+  z-index: 6 !important;
+  transition: none !important;
+}
+/* Slight pulse so player knows to click again */
+@keyframes pendingPulse {
+  0%,100% { outline-color: rgba(255,255,255,.88); }
+  50%     { outline-color: rgba(255,165,0,.95); }
+}
+.hoe-pending-tile { animation: pendingPulse 1s ease-in-out infinite !important; }
+
+/* ══ TOAST & NOTIFICATION BACKGROUNDS — 72 % OPACITY ═══════════════ */
+.toast {
+  background: rgba(255,255,255,.72) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+body.dark .toast {
+  background: rgba(30,42,30,.72) !important;
+}
+.toast.t-success { background: rgba(240,253,244,.72) !important; }
+body.dark .toast.t-success { background: rgba(10,32,22,.72) !important; }
+.toast.t-warn    { background: rgba(255,251,235,.72) !important; }
+body.dark .toast.t-warn    { background: rgba(30,24,0,.72) !important; }
+.toast.t-error   { background: rgba(254,242,242,.72) !important; }
+body.dark .toast.t-error   { background: rgba(30,8,8,.72) !important; }
+.toast.t-info    { background: rgba(255,255,255,.72) !important; }
+body.dark .toast.t-info    { background: rgba(20,30,20,.72) !important; }
+
+/* Achievement popup */
+#achieve-popup {
+  background: rgba(255,255,255,.72) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+body.dark #achieve-popup {
+  background: rgba(30,42,30,.72) !important;
+}
+
+/* Season banner */
+.season-banner {
+  background: rgba(255,255,255,.72) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+body.dark .season-banner {
+  background: rgba(30,42,30,.72) !important;
+}
+
+/* Retro — keep solid for pixel-art feel */
+body.retro .toast             { background: rgba(18,12,0,.88) !important; backdrop-filter: none !important; }
+body.retro #achieve-popup     { background: rgba(18,12,0,.88) !important; backdrop-filter: none !important; }
+body.retro .season-banner     { background: rgba(18,12,0,.88) !important; backdrop-filter: none !important; }
+`;
+  document.head.appendChild(style);
+
+  /* ────────────────────────────────────────────────────────────────────
+     SECTION 1  RESTORE TILE GRID — remove tbu.js's CSS injection
+  ──────────────────────────────────────────────────────────────────── */
+  function _removeTbuGrassCSS () {
+    var el = document.getElementById('bigupdate-grass-css');
+    if (el) { el.remove(); console.log('[PatchV3b] Removed bigupdate-grass-css.'); }
+    else     { setTimeout(_removeTbuGrassCSS, 100); }
+  }
+  _removeTbuGrassCSS();
+
+  /* Strip gv* classes after every renderFarm so micro-variation
+     tinting is gone (the CSS already zeroes the filter, but
+     removing the class keeps things tidy).                       */
+  function _hookRenderFarmStripGv () {
+    if (typeof window.renderFarm !== 'function') { setTimeout(_hookRenderFarmStripGv, 150); return; }
+    var _prev = window.renderFarm;
+    window.renderFarm = function () {
+      _prev.apply(this, arguments);
+      var grid = document.getElementById('farm-grid');
+      if (!grid) return;
+      Array.from(grid.children).forEach(function (el) {
+        el.classList.remove('gv0','gv1','gv2','gv3','gv4');
+      });
+      /* Also undo any JS-forced tile sizes from patch_v3 mobile grid
+         (we want the CSS-driven sizes back on mobile too)         */
+      if (window.innerWidth <= 680) {
+        Array.from(grid.children).forEach(function (el) {
+          el.style.removeProperty('width');
+          el.style.removeProperty('height');
+          el.style.removeProperty('padding');
+          el.style.removeProperty('font-size');
+        });
+        grid.style.removeProperty('width');
+        grid.style.removeProperty('height');
+      }
+    };
+    console.log('[PatchV3b] renderFarm patched to strip gv classes.');
+  }
+  _hookRenderFarmStripGv();
+
+  /* ────────────────────────────────────────────────────────────────────
+     SECTION 2  HOE PICKER TOGGLE
+     The patch_v3 setTool hook always opens the picker when t==='hoe'.
+     We track a global flag _hoePickerOpen and, if the hoe button is
+     clicked while picker is already open, close it instead.
+  ──────────────────────────────────────────────────────────────────── */
+  window._hoePickerOpen = false;
+
+  /* Override the open/close helpers defined in patch_v3 so we can
+     track the flag properly.                                       */
+  var _origOpen3  = window._openHoePicker  || function(){};
+  var _origClose3 = window._closeHoePicker || function(){};
+
+  window._openHoePicker = function () {
+    _origOpen3();
+    window._hoePickerOpen = true;
+  };
+  window._closeHoePicker = function () {
+    _origClose3();
+    window._hoePickerOpen = false;
+  };
+
+  /* Patch the PC toolbar hoe button for toggle */
+  function _patchHoeBtnToggle () {
+    var btn = document.getElementById('tool-hoe');
+    if (!btn) { setTimeout(_patchHoeBtnToggle, 200); return; }
+    btn.addEventListener('click', function () {
+      if (typeof G === 'undefined') return;
+      /* If hoe is already active and picker is open → close */
+      if (G.tool === 'hoe' && window._hoePickerOpen) {
+        if (typeof window._closeHoePicker === 'function') window._closeHoePicker();
+      }
+      /* (patch_v3 setTool hook handles the open side) */
+    }, true); /* capture so this fires before patch_v3's listener */
+    console.log('[PatchV3b] Hoe button toggle patched (PC).');
+  }
+  _patchHoeBtnToggle();
+
+  /* Patch the mobile dock hoe button for toggle */
+  function _patchDockHoeBtnToggle () {
+    var btn = document.getElementById('dock-hoe');
+    if (!btn) { setTimeout(_patchDockHoeBtnToggle, 300); return; }
+    btn.addEventListener('click', function () {
+      if (typeof G === 'undefined') return;
+      if (G.tool === 'hoe' && window._hoePickerOpen) {
+        if (typeof window._closeHoePicker === 'function') window._closeHoePicker();
+      }
+    }, true);
+    console.log('[PatchV3b] Dock hoe button toggle patched (mobile).');
+  }
+  _patchDockHoeBtnToggle();
+
+  /* ────────────────────────────────────────────────────────────────────
+     SECTION 3  CITY HUB REMOVED — restore original openCityScreen
+     patch_v3 replaced openCityScreen with the hub overlay.  We put
+     back the original behaviour: open city-screen, go to market tab,
+     but also inject the Jobs tab while we're at it.
+  ──────────────────────────────────────────────────────────────────── */
+  function _restoreOpenCityScreen () {
+    if (typeof _ensureSM !== 'function' || typeof setCityTab !== 'function') {
+      setTimeout(_restoreOpenCityScreen, 200); return;
+    }
+    window.openCityScreen = function () {
+      if (typeof _ensureSM       === 'function') _ensureSM();
+      var el = document.getElementById('city-screen');
+      if (el) el.classList.add('city-open');
+      if (typeof _updateCityGold === 'function') _updateCityGold();
+      window.paused = true;
+      /* Inject Jobs tab if not already there, then go to market */
+      _injectJobsCityTab();
+      if (typeof setCityTab      === 'function') setCityTab('market');
+    };
+
+    /* Also close the city-hub overlay if it was left open */
+    var hub = document.getElementById('city-hub');
+    if (hub) hub.style.display = 'none';
+
+    console.log('[PatchV3b] openCityScreen restored to original behaviour.');
+  }
+  _restoreOpenCityScreen();
+
+  /* Inject a "💼 Jobs" tab into the city screen (idempotent) */
+  function _injectJobsCityTab () {
+    if (document.getElementById('city-tab-jobs-v3b')) return;
+    var tabs = document.querySelector('#city-screen .city-tabs');
+    if (!tabs) return;
+    var btn = document.createElement('button');
+    btn.className  = 'city-tab-btn';
+    btn.id         = 'city-tab-jobs-v3b';
+    btn.dataset.ctab = 'jobs';
+    btn.textContent  = '💼 Jobs';
+    btn.addEventListener('click', function () {
+      if (typeof setCityTab === 'function') setCityTab('jobs');
+    });
+    tabs.appendChild(btn);
+  }
+
+  /* Make sure the tab appears whenever city screen opens */
+  function _observeCityScreen () {
+    var cs = document.getElementById('city-screen');
+    if (!cs) { setTimeout(_observeCityScreen, 300); return; }
+    var mo = new MutationObserver(function () {
+      if (cs.classList.contains('city-open')) _injectJobsCityTab();
+    });
+    mo.observe(cs, { attributes: true, attributeFilter: ['class'] });
+  }
+  _observeCityScreen();
+
+  /* ────────────────────────────────────────────────────────────────────
+     SECTION 4  HOE TILE PREVIEW
+     State:  window._hoePending = null | { r, c }
+             window._hoePendingEls = []  (highlighted DOM elements)
+     Logic:
+       • size === 1   → till immediately (delegate to lower patch)
+       • size > 1, no pending  → show preview, set pending
+       • size > 1, pending, click IN preview area → till, clear
+       • size > 1, pending, click OUTSIDE         → move preview
+  ──────────────────────────────────────────────────────────────────── */
+  window._hoePending    = null;
+  window._hoePendingEls = [];
+
+  function _clearHoePending () {
+    window._hoePendingEls.forEach(function (el) {
+      el.classList.remove('hoe-pending-tile');
+    });
+    window._hoePendingEls = [];
+    window._hoePending    = null;
+  }
+
+  function _showHoePendingAt (r, c, size) {
+    _clearHoePending();
+    var grid = document.getElementById('farm-grid');
+    if (!grid) return;
+    var GW_v = typeof GW !== 'undefined' ? GW : 14;
+    var GH_v = typeof GH !== 'undefined' ? GH : 10;
+    var offsets = _v3bHoeOffsets(size);
+    offsets.forEach(function (off) {
+      var nr = r + off[0], nc = c + off[1];
+      if (nr < 0 || nr >= GH_v || nc < 0 || nc >= GW_v) return;
+      /* Only highlight non-tilled, non-deco, non-crop, non-tree tiles */
+      if (typeof G !== 'undefined' && G.farm) {
+        var tile = G.farm[nr] && G.farm[nr][nc];
+        if (tile && (tile.tilled || tile.deco)) return;
+      }
+      var el = grid.children[nr * GW_v + nc];
+      if (!el) return;
+      el.classList.add('hoe-pending-tile');
+      window._hoePendingEls.push(el);
+    });
+    window._hoePending = { r: r, c: c };
+  }
+
+  function _v3bHoeOffsets (size) {
+    if (size === 1) return [[0,0]];
+    if (size === 2) return [[0,0],[0,1],[1,0],[1,1]];
+    var range = size === 4 ? [-1,0,1,2] : [-1,0,1];
+    var arr = [];
+    for (var i = 0; i < range.length; i++)
+      for (var j = 0; j < range.length; j++)
+        arr.push([range[i], range[j]]);
+    return arr;
+  }
+
+  function _isInPendingArea (r, c) {
+    if (!window._hoePending) return false;
+    var size = (typeof window._getDesiredHoeSize === 'function')
+               ? window._getDesiredHoeSize() : 1;
+    var pr = window._hoePending.r, pc = window._hoePending.c;
+    var offsets = _v3bHoeOffsets(size);
+    for (var i = 0; i < offsets.length; i++) {
+      if (pr + offsets[i][0] === r && pc + offsets[i][1] === c) return true;
+    }
+    return false;
+  }
+
+  /* Wrap clickTile one more time (outermost) to add preview logic */
+  function _hookClickTilePreview () {
+    if (typeof window.clickTile !== 'function') { setTimeout(_hookClickTilePreview, 250); return; }
+    var _prev = window.clickTile;
+
+    window.clickTile = function (r, c) {
+      /* Only intercept hoe with area > 1 */
+      if (typeof G === 'undefined' || G.tool !== 'hoe') {
+        _clearHoePending();
+        return _prev.apply(this, arguments);
+      }
+      var size = (typeof window._getDesiredHoeSize === 'function')
+                 ? window._getDesiredHoeSize() : 1;
+      if (size === 1) {
+        _clearHoePending();
+        return _prev.apply(this, arguments); /* till immediately */
+      }
+
+      if (window._hoePending) {
+        if (_isInPendingArea(r, c)) {
+          /* Second click inside preview → confirm till */
+          var pr = window._hoePending.r, pc = window._hoePending.c;
+          _clearHoePending();
+          /* Delegate to patch_v3 clickTile wrapper which handles multi-till */
+          return _prev.call(this, pr, pc);
+        } else {
+          /* Clicked outside → move preview */
+          _showHoePendingAt(r, c, size);
+          if (typeof toast === 'function') toast('⚒ Click highlighted tiles to till', 'info', 1000);
+        }
+      } else {
+        /* First click → show preview */
+        _showHoePendingAt(r, c, size);
+        var label = size + '×' + size;
+        if (typeof toast === 'function') toast('⚒ ' + label + ' preview — click again to till', 'info', 1500);
+      }
+    };
+
+    console.log('[PatchV3b] clickTile hooked for hoe tile preview.');
+  }
+  _hookClickTilePreview();
+
+  /* Clear pending preview when tool changes */
+  function _hookSetToolClearPending () {
+    if (typeof window.setTool !== 'function') { setTimeout(_hookSetToolClearPending, 200); return; }
+    var _prev = window.setTool;
+    window.setTool = function (t) {
+      if (t !== 'hoe') _clearHoePending();
+      _prev.apply(this, arguments);
+    };
+  }
+  _hookSetToolClearPending();
+
+  /* Clear pending preview after sleep */
+  function _hookDoSleepClearPending () {
+    if (typeof window.doSleep !== 'function') { setTimeout(_hookDoSleepClearPending, 200); return; }
+    var _prev = window.doSleep;
+    window.doSleep = function () {
+      _clearHoePending();
+      return _prev.apply(this, arguments);
+    };
+  }
+  _hookDoSleepClearPending();
+
+  /* ────────────────────────────────────────────────────────────────────
+     DONE
+  ──────────────────────────────────────────────────────────────────── */
+  console.log('[PatchV3b v1.0] ✅ Loaded!\n' +
+    '  · Tile grid restored (borders + gaps, no seamless grass)\n' +
+    '  · Hoe picker: clicking again now closes it (toggle)\n' +
+    '  · City hub removed — goes straight to City screen\n' +
+    '  · Hoe size > 1: first click previews area, second confirms\n' +
+    '  · Toast + achievement backgrounds at 72% opacity');
 })();
