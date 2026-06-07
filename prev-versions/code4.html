@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Baloo+2:wght@700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8f5e9;--ui-bg:#ffffff;--ui-bg2:#f9fafb;--ui-border:#e5e7eb;
+  --text-primary:#1a2e1a;--text-muted:#6b7280;--text-soft:#9ca3af;
+  --gold:#f59e0b;--green:#22c55e;
+}
+body.dark{
+  --bg:#1a2318;--ui-bg:#1e2a1e;--ui-bg2:#243024;--ui-border:#2d3d2d;
+  --text-primary:#d4edda;--text-muted:#8faa8f;--text-soft:#5d7a5d;
+}
+/* ═══ RETRO THEME VARIABLES ═══ */
+body.retro{
+  --bg:#1a1209;--ui-bg:#120c00;--ui-bg2:#1c1209;--ui-border:#8b6914;
+  --text-primary:#f5deb3;--text-muted:#a1887f;--text-soft:#5d4037;
+  --gold:#ffd700;--green:#69f0ae;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);overflow:hidden;height:100vh;display:flex;flex-direction:column;user-select:none;transition:background .3s}
+.screen{display:none;position:fixed;inset:0;z-index:100;flex-direction:column}
+.screen.active{display:flex}
+
+/* ═══════════════════════════════════════════
+   AUTH — CLAUDE AI DARK STYLE
+═══════════════════════════════════════════ */
+#auth-screen{
+  align-items:center;justify-content:center;
+  background:#0d0d0d;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.auth-wrap{width:100%;max-width:380px;padding:28px 24px}
+.auth-logo{font-size:42px;text-align:center;display:block;margin-bottom:16px;filter:drop-shadow(0 0 24px rgba(34,197,94,.25))}
+.auth-title{
+  font-size:23px;font-weight:600;color:#fff;text-align:center;
+  margin-bottom:5px;letter-spacing:-.4px;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.auth-sub{font-size:13px;color:rgba(255,255,255,.38);text-align:center;margin-bottom:28px;font-family:-apple-system,'Segoe UI',sans-serif}
+.auth-tabs{
+  display:flex;background:#161616;border-radius:8px;padding:3px;margin-bottom:18px;gap:3px;
+  border:1px solid rgba(255,255,255,.07);
+}
+.auth-tab{
+  flex:1;padding:8px;border:none;background:transparent;
+  font-size:13px;font-weight:600;color:rgba(255,255,255,.35);cursor:pointer;
+  border-radius:6px;transition:all .18s;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.auth-tab.active{background:#262626;color:#fff}
+.auth-tab:hover:not(.active){color:rgba(255,255,255,.6)}
+.auth-field{margin-bottom:13px}
+.auth-field label{
+  display:block;font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.4);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.6px;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.auth-field input{
+  width:100%;padding:11px 14px;
+  border:1px solid rgba(255,255,255,.1);border-radius:8px;
+  font-size:14px;color:#fff;outline:none;transition:border-color .2s,background .2s;
+  background:#161616;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.auth-field input::placeholder{color:rgba(255,255,255,.18)}
+.auth-field input:focus{border-color:rgba(255,255,255,.28);background:#1c1c1c}
+.auth-btn{
+  width:100%;padding:12px;border:none;border-radius:8px;
+  background:#fff;color:#000;font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .18s;letter-spacing:.1px;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.auth-btn:hover{background:#ebebeb}
+.auth-btn:active{background:#d8d8d8;transform:scale(.99)}
+.auth-error{
+  color:#f87171;font-size:12px;font-weight:600;margin-bottom:12px;display:none;
+  background:rgba(239,68,68,.1);padding:8px 12px;border-radius:8px;
+  border:1px solid rgba(239,68,68,.22);
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.saved-list{margin-top:20px}
+.saved-title{
+  font-size:10px;font-weight:700;color:rgba(255,255,255,.22);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;
+  font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+.saved-entry{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:#161616;border-radius:8px;margin-bottom:5px;
+  cursor:pointer;transition:background .15s;border:1px solid rgba(255,255,255,.07);
+}
+.saved-entry:hover{background:#1e1e1e;border-color:rgba(255,255,255,.14)}
+.saved-entry-name{font-size:13px;font-weight:600;color:#fff;font-family:-apple-system,'Segoe UI',sans-serif}
+.saved-entry-info{font-size:11px;color:rgba(255,255,255,.33);margin-top:2px;font-family:-apple-system,'Segoe UI',sans-serif}
+.saved-entry-del{color:rgba(255,255,255,.22);cursor:pointer;font-size:15px;padding:3px 6px;border-radius:4px;transition:color .15s}
+.saved-entry-del:hover{color:#f87171}
+
+/* ═══════════════════════════════════════════
+   GAME LAYOUT
+═══════════════════════════════════════════ */
+#game-screen{background:var(--bg);transition:background .3s}
+#hud{background:var(--ui-bg);border-bottom:1.5px solid var(--ui-border);padding:6px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.hud-pill{display:flex;align-items:center;gap:5px;background:var(--ui-bg2);border:1.5px solid var(--ui-border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--text-primary);white-space:nowrap}
+.hud-pill.gold-pill{background:#fefce8;border-color:#fde68a;color:#92400e}
+body.dark .hud-pill.gold-pill{background:#2a2000;border-color:#78500a;color:#fbbf24}
+.bar-wrap{width:55px;height:5px;background:var(--ui-border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.autosave-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:savepulse 2.5s infinite}
+@keyframes savepulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+#main{display:flex;flex:1;overflow:hidden}
+#farm-wrap{flex:1;overflow:auto;padding:12px;display:flex;align-items:flex-start;justify-content:flex-start}
+#farm-wrap::-webkit-scrollbar{width:5px;height:5px}
+#farm-wrap::-webkit-scrollbar-thumb{background:var(--ui-border);border-radius:4px}
+#farm-grid{display:grid;gap:3px}
+
+/* TILES */
+.tile{width:52px;height:52px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;position:relative;border:2px solid rgba(0,0,0,.13);transition:filter .12s,transform .12s;overflow:hidden}
+.tile:hover{filter:brightness(1.25);transform:scale(1.1);z-index:5;border-color:rgba(255,255,255,.75);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.tile:active{transform:scale(.93)}
+.tile-s0 .crop-em{font-size:14px}.tile-s1 .crop-em{font-size:18px}.tile-s2 .crop-em{font-size:24px}.tile-s3 .crop-em{font-size:28px}
+.tile-ready{animation:readypulse 1.4s ease-in-out infinite}
+@keyframes readypulse{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.7)}50%{box-shadow:0 0 12px 6px rgba(250,204,21,.22)}}
+.sparkle{position:absolute;top:2px;right:3px;font-size:10px}
+.days-badge{position:absolute;bottom:2px;left:3px;font-size:9px;font-weight:800;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.water-dot{position:absolute;bottom:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#60a5fa}
+.grass-deco{font-size:13px;opacity:.22}
+.tile-tree{width:52px;height:52px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid rgba(0,0,0,.13);pointer-events:none}
+.tile-cactus{pointer-events:auto!important;cursor:pointer!important;transition:filter .12s,transform .12s!important}
+.tile-cactus:hover{filter:brightness(1.3)!important;transform:scale(1.1)!important;border-color:rgba(255,255,255,.6)!important}
+.tile-cactus:active{transform:scale(.92)!important}
+
+/* DESKTOP SIDE PANEL */
+#side{width:230px;flex-shrink:0;background:var(--ui-bg);border-left:1.5px solid var(--ui-border);display:flex;flex-direction:column;overflow:hidden;transition:width .3s cubic-bezier(.25,.8,.25,1),opacity .3s ease}
+#side.side-collapsed{width:0;opacity:0;pointer-events:none}
+#side-content{flex:1;overflow-y:auto;padding:10px}
+#side-content::-webkit-scrollbar{width:4px}
+#side-content::-webkit-scrollbar-thumb{background:var(--ui-border);border-radius:4px}
+@media(max-width:680px){#side{display:none}}
+
+/* ═══ SHARED PANEL CONTENT STYLES ═══ */
+.tabs{display:flex;padding:6px 6px 0;gap:3px;border-bottom:1.5px solid var(--ui-border)}
+.tab-btn{flex:1;padding:8px 4px;background:transparent;color:var(--text-muted);border:none;border-radius:8px 8px 0 0;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--ui-bg2);color:var(--green);border-bottom:2.5px solid var(--green)}
+.tab-btn:hover:not(.active){background:var(--ui-bg2)}
+.s-sec{font-size:10px;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 6px}
+.s-sec:first-child{margin-top:0}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;background:var(--ui-bg2);border-radius:8px;margin-bottom:3px;font-size:12px;font-weight:600;border:1px solid var(--ui-border);color:var(--text-primary)}
+.inv-qty{color:var(--gold);font-weight:800}
+.inv-val{color:var(--green);font-size:11px;font-weight:700}
+.empty-msg{color:var(--text-soft);font-size:11px;line-height:2.1;text-align:center;padding:8px}
+.ship-btn{width:100%;margin-top:8px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:10px 6px;font-family:'Baloo 2',cursive;font-size:13px;cursor:pointer;border-radius:11px;transition:all .15s;box-shadow:0 3px 10px rgba(34,197,94,.2)}
+.ship-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+.pending-box{margin-top:8px;padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;font-size:11px;color:#166534;text-align:center;line-height:1.9;font-weight:600}
+body.dark .pending-box{background:#0d2a14;border-color:#166534;color:#4ade80}
+.stats-box{margin-top:10px;padding:10px;background:var(--ui-bg2);border-radius:10px;font-size:11px;color:var(--text-muted);line-height:2.3;border:1px solid var(--ui-border)}
+.stats-box b{color:var(--text-primary)}
+.shop-card{padding:10px;background:var(--ui-bg2);border:1px solid var(--ui-border);border-radius:12px;margin-bottom:7px;transition:border-color .15s}
+.shop-card:hover{border-color:#86efac}
+.shop-name{font-size:13px;font-weight:800;color:var(--text-primary)}
+.shop-price{font-size:11px;font-weight:700;color:var(--gold)}
+.shop-meta{font-size:10px;color:var(--text-soft);margin:3px 0 7px;line-height:1.8}
+.shop-row{display:flex;gap:5px}
+.buy-btn{flex:1;background:var(--ui-bg);color:#166534;border:1.5px solid #86efac;padding:6px 3px;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;cursor:pointer;border-radius:8px;transition:all .15s}
+body.dark .buy-btn{color:#4ade80;border-color:#166534;background:var(--ui-bg2)}
+.buy-btn:hover:not(:disabled){background:#f0fdf4;border-color:#4ade80}
+body.dark .buy-btn:hover:not(:disabled){background:#0d2a14}
+.buy-btn:disabled{opacity:.35;cursor:not-allowed}
+.winter-msg{color:var(--text-soft);font-size:12px;line-height:2.2;text-align:center;padding:24px 10px}
+
+/* ═══ BOTTOM SHEET ═══ */
+#sheet-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.48);z-index:199;
+  backdrop-filter:blur(3px);
+  transition:opacity .3s;
+}
+#sheet-bg.sheet-open{display:block}
+#bottom-sheet{
+  position:fixed;left:0;right:0;bottom:0;
+  height:88vh;
+  background:var(--ui-bg);
+  border-top:1.5px solid var(--ui-border);
+  border-radius:20px 20px 0 0;
+  z-index:200;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .34s cubic-bezier(.25,.8,.25,1);
+  box-shadow:0 -10px 50px rgba(0,0,0,.22);
+  will-change:transform;
+  touch-action:none;
+}
+#bottom-sheet.sheet-open{transform:translateY(0)}
+.sheet-handle-wrap{
+  display:flex;align-items:center;justify-content:center;
+  padding:10px 0 4px;flex-shrink:0;cursor:pointer;
+}
+.sheet-handle{
+  width:40px;height:4px;
+  background:var(--ui-border);border-radius:4px;
+}
+#sheet-content{
+  flex:1;overflow-y:auto;padding:10px 12px 20px;
+}
+#sheet-content::-webkit-scrollbar{width:4px}
+#sheet-content::-webkit-scrollbar-thumb{background:var(--ui-border);border-radius:4px}
+
+/* Swipe-up hint pill — visible on mobile only when sheet closed */
+#swipe-hint{
+  display:none;
+  position:fixed;bottom:62px;left:50%;
+  transform:translateX(-50%);
+  background:var(--ui-bg);
+  border:1.5px solid var(--ui-border);
+  border-radius:20px;padding:5px 14px;
+  font-size:11px;font-weight:700;
+  color:var(--text-muted);
+  align-items:center;gap:6px;
+  z-index:50;cursor:pointer;
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
+  animation:hintBob 2.8s ease-in-out infinite;
+  white-space:nowrap;
+}
+@keyframes hintBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+
+@media(max-width:680px){
+  #farm-wrap{padding:8px}
+  .tile,.tile-tree{width:45px;height:45px;font-size:19px}
+  #farm-grid{gap:2px}
+  .hud-pill{font-size:10px;padding:3px 7px}
+  #swipe-hint{display:flex}
+}
+@media(max-width:400px){
+  .tile,.tile-tree{width:38px;height:38px;font-size:16px}
+  .hud-pill{font-size:9px;padding:3px 5px;gap:3px}
+}
+
+/* HELP OVERLAY */
+#help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:900;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+#help-overlay.show{display:flex;animation:fdIn .25s ease}
+.help-card{background:var(--ui-bg);border:1.5px solid var(--ui-border);border-radius:24px;width:340px;max-width:92vw;padding:30px 24px 22px;box-shadow:0 24px 80px rgba(0,0,0,.28);position:relative;overflow:hidden}
+.help-glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 70%);pointer-events:none}
+.help-skip{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-soft);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;padding:4px 8px;border-radius:6px;transition:color .15s,background .15s}
+.help-skip:hover{color:var(--text-muted);background:var(--ui-bg2)}
+.help-step-label{font-size:9px;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:6px}
+.help-emoji{font-size:52px;text-align:center;display:block;margin-bottom:10px;line-height:1}
+.help-title{font-family:'Baloo 2',cursive;font-size:20px;color:var(--text-primary);text-align:center;margin-bottom:10px;line-height:1.2}
+.help-body{font-size:13px;color:var(--text-muted);line-height:1.85;text-align:center;margin-bottom:14px;min-height:70px}
+.help-tip{font-size:11px;font-weight:700;color:var(--green);background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:8px 14px;text-align:center;margin-bottom:18px}
+body.dark .help-tip{background:#0d2a14;border-color:#166534;color:#4ade80}
+.help-dots{display:flex;justify-content:center;gap:5px;margin-bottom:18px}
+.help-dot{width:7px;height:7px;border-radius:50%;background:var(--ui-border);transition:background .25s,transform .25s,width .25s}
+.help-dot.active{background:var(--green);transform:scale(1.25);width:18px;border-radius:4px}
+.help-nav{display:flex;gap:8px;align-items:stretch}
+.help-back-btn{padding:10px 14px;border-radius:12px;border:1.5px solid var(--ui-border);background:var(--ui-bg2);color:var(--text-muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;flex-shrink:0}
+.help-back-btn:hover{border-color:var(--ui-border);color:var(--text-primary)}
+.help-next-btn{flex:1;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Baloo 2',cursive;font-size:14px;cursor:pointer;transition:all .15s}
+.help-next-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+
+/* ACHIEVEMENT POPUP */
+#achieve-popup{
+  display:none;position:fixed;top:70px;left:50%;
+  transform:translateX(-50%);
+  z-index:960;min-width:260px;max-width:88vw;
+  background:var(--ui-bg);
+  border:2px solid var(--gold);border-radius:20px;
+  padding:16px 22px 14px;
+  box-shadow:0 8px 50px rgba(245,158,11,.3),0 0 0 1px rgba(245,158,11,.1);
+  text-align:center;pointer-events:none;
+}
+#achieve-popup.show{display:block;animation:achievePop .5s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes achievePop{
+  from{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.85)}
+  to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+}
+.achieve-label{font-size:9px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px}
+.achieve-icon{font-size:36px;margin-bottom:4px;display:block}
+.achieve-name{font-family:'Baloo 2',cursive;font-size:17px;color:var(--text-primary);margin-bottom:3px}
+.achieve-desc{font-size:11px;color:var(--text-muted);line-height:1.6}
+
+/* TOOLBAR */
+#toolbar{background:var(--ui-bg);border-top:1.5px solid var(--ui-border);padding:8px 12px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;z-index:50}
+.tool-btn{background:var(--ui-bg2);color:var(--text-primary);border:1.5px solid var(--ui-border);padding:7px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.tool-btn:hover{border-color:#86efac;background:#f0fdf4;color:#166534}
+body.dark .tool-btn:hover{background:#0d2a14;border-color:#166534;color:#4ade80}
+.tool-btn.active{border-color:#22c55e;background:#dcfce7;color:#166534}
+body.dark .tool-btn.active{background:#0d2a14;border-color:#4ade80;color:#4ade80}
+.tool-btn:active{transform:scale(.95)}
+#seed-select{background:var(--ui-bg2);color:var(--text-primary);border:1.5px solid var(--ui-border);padding:7px 10px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;border-radius:10px;cursor:pointer;flex-shrink:0;outline:none}
+.spacer{flex:1}
+#sleep-btn{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;padding:8px 16px;font-family:'Baloo 2',cursive;font-size:13px;cursor:pointer;border-radius:10px;transition:all .15s;flex-shrink:0;box-shadow:0 3px 10px rgba(99,102,241,.3)}
+#sleep-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(99,102,241,.4)}
+#pause-btn{background:var(--ui-bg2);color:var(--text-primary);border:1.5px solid var(--ui-border);padding:7px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;transition:all .15s;flex-shrink:0}
+#pause-btn:hover{border-color:#6366f1;background:#eef2ff;color:#4f46e5}
+body.dark #pause-btn:hover{background:#1e1a3a;border-color:#6366f1;color:#818cf8}
+
+/* TOASTS */
+#toast-wrap{position:fixed;top:54px;right:14px;display:flex;flex-direction:column;gap:5px;z-index:999;pointer-events:none}
+.toast{background:var(--ui-bg);border:1.5px solid var(--ui-border);padding:8px 14px;font-size:12px;font-weight:700;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.1);animation:toastIn .22s ease;max-width:230px;color:var(--text-primary)}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-out{animation:toastOut .2s ease forwards}
+@keyframes toastOut{to{transform:translateX(110%);opacity:0}}
+.toast.t-success{border-color:#86efac;color:#166534}
+body.dark .toast.t-success{color:#4ade80;border-color:#166534}
+.toast.t-warn{border-color:#fde68a;color:#92400e}
+.toast.t-error{border-color:#fca5a5;color:#991b1b}
+
+/* SLEEP */
+#sleep-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.96);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#sleep-overlay.show{display:flex;animation:fdIn .4s ease}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+.sleep-moon{font-size:56px;animation:floatY 2s ease-in-out infinite}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.sleep-text{font-family:'Baloo 2',cursive;font-size:18px;color:#e2e8f0}
+.sleep-sub{font-size:12px;color:#64748b}
+
+/* SEASON BANNER */
+.season-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ui-bg);border:2px solid var(--ui-border);padding:18px 36px;font-family:'Baloo 2',cursive;font-size:18px;color:var(--text-primary);z-index:900;pointer-events:none;text-align:center;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.15);animation:bannerPop .45s ease}
+@keyframes bannerPop{from{transform:translate(-50%,-50%) scale(.5);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+/* PAUSE MENU */
+#pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center}
+#pause-overlay.show{display:flex;animation:fdIn .2s ease}
+.pause-card{background:var(--ui-bg);border-radius:22px;padding:30px 26px;width:320px;border:1.5px solid var(--ui-border);box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.pause-title{font-family:'Baloo 2',cursive;font-size:22px;color:var(--text-primary);text-align:center;margin-bottom:4px}
+.pause-sub{font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:20px}
+.pause-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--ui-border)}
+.pause-row:last-of-type{border-bottom:none}
+.pause-label{font-size:13px;font-weight:700;color:var(--text-primary)}
+.pause-desc{font-size:10px;color:var(--text-soft);margin-top:2px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:24px;cursor:pointer;transition:background .2s}
+.toggle input:checked+.toggle-slider{background:#22c55e}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
+.pause-btn-row{display:flex;gap:8px;margin-top:18px}
+.pause-action{flex:1;padding:9px 4px;border-radius:10px;border:1.5px solid var(--ui-border);background:var(--ui-bg2);color:var(--text-primary);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.pause-action:hover{border-color:#86efac;background:#f0fdf4;color:#166534}
+body.dark .pause-action:hover{background:#0d2a14;border-color:#166534;color:#4ade80}
+.pause-action.danger:hover{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+body.dark .pause-action.danger:hover{background:#2a0d0d;border-color:#991b1b;color:#f87171}
+.pause-close{width:100%;margin-top:8px;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:'Baloo 2',cursive;font-size:15px;cursor:pointer;transition:all .15s}
+.pause-close:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,197,94,.3)}
+
+/* ═══════════════════════════════════════════
+   RETRO THEME OVERRIDES — pixel-art style
+═══════════════════════════════════════════ */
+body.retro,body.retro .tab-btn,body.retro .tool-btn,body.retro #seed-select,
+body.retro .pause-action,body.retro .pause-close,body.retro .pause-title,
+body.retro .pause-sub,body.retro .pause-label,body.retro .pause-desc,
+body.retro .ship-btn,body.retro .buy-btn,body.retro .s-sec,
+body.retro .inv-row,body.retro .shop-name,body.retro .shop-price,
+body.retro .shop-meta,body.retro .inv-qty,body.retro .inv-val,
+body.retro .empty-msg,body.retro .winter-msg,body.retro .stats-box,
+body.retro .pending-box,body.retro .hud-pill,body.retro .sleep-text,
+body.retro .sleep-sub,body.retro #sleep-btn,body.retro #pause-btn,
+body.retro .season-banner,body.retro .toast,body.retro #swipe-hint,
+body.retro .days-badge{
+  font-family:'Press Start 2P',monospace!important;
+}
+
+/* HUD retro */
+body.retro #hud{background:#120c00;border-bottom:3px solid #8b6914;box-shadow:none;padding:5px 10px}
+body.retro .hud-pill{background:transparent!important;border:none!important;border-radius:0!important;padding:2px 6px!important;font-size:6.5px!important;color:#f5deb3!important;gap:4px}
+body.retro .hud-pill.gold-pill{color:#ffd700!important}
+body.retro .autosave-dot{background:#69f0ae}
+body.retro .bar-wrap{background:#2d1b00;border-radius:2px}
+body.retro .bar-fill{border-radius:2px}
+
+/* Tiles retro */
+body.retro .tile{border-radius:4px;border:1px solid rgba(0,0,0,.3)}
+body.retro .tile:hover{box-shadow:0 0 0 2px #8b6914!important;border-color:#8b6914}
+body.retro .tile-tree{border-radius:4px;border:1px solid rgba(0,0,0,.3)}
+body.retro .days-badge{font-size:5.5px}
+
+/* Bottom sheet retro */
+body.retro #bottom-sheet{background:#120c00;border-top:3px solid #8b6914}
+body.retro .sheet-handle{background:#3e2723}
+body.retro .tabs{background:#120c00;border-bottom:2px solid #8b6914;padding:0}
+/* Desktop side retro */
+body.retro #side{background:#120c00;border-left:3px solid #8b6914}
+/* Help retro */
+body.retro .help-card{background:#120c00;border:3px solid #8b6914;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .help-title{color:#ffd700}
+body.retro .help-body{color:#a1887f}
+body.retro .help-step-label{color:#5d4037}
+body.retro .help-tip{background:#0d2e10;border:1px solid #388e3c;color:#a5d6a7;border-radius:3px}
+body.retro .help-back-btn{background:#1c1209;color:#a1887f;border:1px solid #3e2723;border-radius:3px}
+body.retro .help-next-btn{background:#1b5e20!important;border:2px solid #388e3c;border-radius:3px}
+body.retro .help-skip{color:#5d4037}
+body.retro .help-dot{background:#3e2723}
+body.retro .help-dot.active{background:#ffd700}
+/* Achievement retro */
+body.retro #achieve-popup{background:#120c00;border:3px solid #ffd700;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .achieve-label{color:#ffd700}
+body.retro .achieve-name{color:#f5deb3}
+body.retro .achieve-desc{color:#a1887f}
+body.retro .tab-btn{border-radius:0;font-size:6px;color:#a1887f;padding:8px 4px}
+body.retro .tab-btn.active{background:#2d1b00;color:#ffd700;border-bottom:2px solid #ffd700}
+body.retro .tab-btn:hover:not(.active){background:#1c1209;color:#f5deb3}
+body.retro #sheet-content{padding:8px}
+body.retro .s-sec{color:#a5d6a7;font-size:5.5px;letter-spacing:.3px;margin:10px 0 5px}
+body.retro .inv-row{background:#1c1209;border:1px solid #3e2723;border-radius:3px;font-size:6.5px;color:#f5deb3;padding:5px 7px}
+body.retro .inv-qty{color:#ffd700}
+body.retro .inv-val{color:#69f0ae;font-size:5.5px}
+body.retro .empty-msg{color:#5d4037;font-size:5.5px;line-height:2}
+body.retro .ship-btn{background:#1b5e20!important;background-image:none!important;color:#a5d6a7;border:2px solid #388e3c;border-radius:3px;font-size:6px;box-shadow:none;padding:8px 4px}
+body.retro .ship-btn:hover{background:#2e7d32!important;transform:none!important;box-shadow:none!important}
+body.retro .pending-box{background:#0d3b15;border:1px solid #388e3c;border-radius:3px;color:#a5d6a7;font-size:5.5px}
+body.retro .stats-box{background:#1c1209;border:1px solid #3e2723;border-radius:3px;color:#a1887f;font-size:5.5px;line-height:2.2}
+body.retro .stats-box b{color:#f5deb3}
+body.retro .shop-card{background:#1c1209;border:1px solid #3e2723;border-radius:3px;padding:8px}
+body.retro .shop-card:hover{border-color:#8b6914}
+body.retro .shop-name{color:#f5deb3;font-size:6.5px}
+body.retro .shop-price{color:#ffd700;font-size:5px}
+body.retro .shop-meta{color:#5d4037;font-size:4.5px;line-height:1.8}
+body.retro .buy-btn{background:#1c1209;color:#69f0ae;border:1px solid #1b5e20;border-radius:2px;font-size:4.5px}
+body.retro .buy-btn:hover:not(:disabled){background:#0d2e10!important;border-color:#388e3c}
+body.retro .winter-msg{color:#5d4037;font-size:6.5px;line-height:2.4}
+
+/* Toolbar retro */
+body.retro #toolbar{background:#120c00;border-top:3px solid #8b6914;padding:6px 8px}
+body.retro .tool-btn{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:6.5px;padding:6px 8px}
+body.retro .tool-btn:hover{border-color:#8b6914!important;background:#2d1b00!important;color:#f5deb3!important}
+body.retro .tool-btn.active{border-color:#ffd700!important;background:#2d1b00!important;color:#ffd700!important}
+body.retro #seed-select{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:5.5px}
+body.retro #sleep-btn{background:#1a237e!important;background-image:none!important;color:#e8eaf6;border:2px solid #7986cb;border-radius:3px;font-size:6.5px;padding:6px 12px;box-shadow:none}
+body.retro #sleep-btn:hover{background:#283593!important;transform:none!important;box-shadow:none!important}
+body.retro #pause-btn{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:6.5px}
+body.retro #pause-btn:hover{border-color:#8b6914!important;background:#2d1b00!important;color:#f5deb3!important}
+
+/* Toasts retro */
+body.retro .toast{background:#120c00;border-width:2px;border-style:solid;border-radius:3px;font-size:6px;box-shadow:3px 3px 0 rgba(0,0,0,.7);color:#f5deb3}
+body.retro .toast.t-success{border-color:#69f0ae!important;color:#a5d6a7!important}
+body.retro .toast.t-warn{border-color:#ffb74d!important;color:#ffe0b2!important}
+body.retro .toast.t-error{border-color:#ef5350!important;color:#ffcdd2!important}
+body.retro .toast.t-info{border-color:#4fc3f7!important;color:#b3e5fc!important}
+
+/* Pause card retro */
+body.retro .pause-card{background:#120c00;border:3px solid #8b6914;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8)}
+body.retro .pause-title{color:#ffd700;font-size:13px}
+body.retro .pause-sub{color:#a1887f;font-size:6px}
+body.retro .pause-row{border-color:#3e2723}
+body.retro .pause-label{color:#f5deb3;font-size:7px}
+body.retro .pause-desc{color:#5d4037;font-size:5.5px}
+body.retro .toggle-slider{background:#3e2723}
+body.retro .toggle input:checked+.toggle-slider{background:#388e3c}
+body.retro .pause-action{background:#1c1209;color:#f5deb3;border:2px solid #3e2723;border-radius:3px;font-size:6px}
+body.retro .pause-action:hover{border-color:#8b6914!important;background:#2d1b00!important;color:#ffd700!important}
+body.retro .pause-action.danger:hover{border-color:#ef5350!important;background:#2a0d0d!important;color:#ef9a9a!important}
+body.retro .pause-close{background:#1b5e20!important;background-image:none!important;border:2px solid #388e3c;border-radius:3px;font-size:7px;box-shadow:none}
+body.retro .pause-close:hover{transform:none!important;box-shadow:none!important;background:#2e7d32!important}
+
+/* Season banner retro */
+body.retro .season-banner{background:#120c00;border:3px solid #ffd700;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,.8);color:#ffd700;font-size:12px}
+
+/* Sleep overlay retro */
+body.retro .sleep-text{font-size:12px;color:#7986cb}
+body.retro .sleep-sub{color:#5c6bc0;font-size:7px}
+
+/* Idle tile warning retro */
+body.retro .tile-idle{border:1.5px dashed #8b6914!important}
+.tile-idle{border:1.5px dashed rgba(156,163,175,.5)!important}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════
+     AUTH SCREEN (Claude AI dark style)
+════════════════════════ -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-wrap">
+    <span class="auth-logo">🌾</span>
+    <div class="auth-title">Valley Farm</div>
+    <div class="auth-sub">A peaceful farming life awaits</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">New Farm</button>
+    </div>
+    <div id="auth-error" class="auth-error"></div>
+    <div class="auth-field">
+      <label>Farmer Name</label>
+      <input type="text" id="auth-name" placeholder="e.g. Old MacDonald" autocomplete="username">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="auth-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')authSubmit()">
+    </div>
+    <button class="auth-btn" id="auth-submit-btn" onclick="authSubmit()">Sign In</button>
+    <div class="saved-list" id="saved-list"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════
+     GAME SCREEN
+════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div id="hud">
+    <div class="hud-pill">📅 <span id="hud-day">Day 1</span></div>
+    <div class="hud-pill" id="season-pill">🌸 <span id="hud-season">Spring</span></div>
+    <div class="hud-pill">📆 <span id="hud-year">Yr.1</span></div>
+    <div class="hud-pill"><span id="weather-em">☀️</span> <span id="hud-weather">Sunny</span></div>
+    <div class="hud-pill">
+      <span id="dn-icon" style="font-size:14px">☀️</span>
+      <span id="hud-time">6:00 AM</span>
+      <div class="bar-wrap"><div class="bar-fill" id="time-bar" style="width:0%;background:#f59e0b"></div></div>
+    </div>
+    <div class="hud-pill">⚡<div class="bar-wrap"><div class="bar-fill" id="energy-bar" style="width:100%;background:#22c55e"></div></div><span id="hud-energy" style="font-size:11px">100</span></div>
+    <div class="hud-pill gold-pill">💰 <span id="hud-gold">500g</span></div>
+    <span id="hud-pending" style="font-size:11px;color:#16a34a;font-weight:700"></span>
+    <div class="hud-pill" style="gap:5px"><div class="autosave-dot"></div><span style="font-size:10px;color:var(--text-soft);font-weight:700">AUTO</span></div>
+  </div>
+
+  <div id="main">
+    <div id="farm-wrap"><div id="farm-grid"></div></div>
+    <!-- Desktop side panel (always visible on desktop) -->
+    <div id="side">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="inv" onclick="setTab('inv')">🎒 Bag</button>
+        <button class="tab-btn" data-tab="shop" onclick="setTab('shop')">🛒 Shop</button>
+      </div>
+      <div id="side-content"></div>
+    </div>
+  </div>
+
+  <div id="toolbar">
+    <button class="tool-btn active" id="tool-hoe" onclick="setTool('hoe')">⛏ Hoe</button>
+    <button class="tool-btn" id="tool-water" onclick="setTool('water')">💧 Water</button>
+    <button class="tool-btn" id="tool-seed" onclick="setTool('seed')">🌱 Seeds</button>
+    <button class="tool-btn" id="tool-scythe" onclick="setTool('scythe')">🌾 Scythe</button>
+    <select id="seed-select" style="display:none" onchange="G.seed=this.value"></select>
+    <div class="spacer"></div>
+    <button class="tool-btn" id="bag-btn" onclick="toggleBag()">🎒 Bag</button>
+    <button class="tool-btn" onclick="openHelp()" title="How to play" style="font-size:15px;padding:7px 11px">❓</button>
+    <button id="pause-btn" onclick="openPause()">⏸ Menu</button>
+    <button id="sleep-btn" onclick="doSleep()">🌙 Sleep</button>
+  </div>
+</div>
+
+<!-- Bottom sheet backdrop -->
+<div id="sheet-bg" onclick="closeSheet()"></div>
+
+<!-- Bottom sheet panel -->
+<div id="bottom-sheet">
+  <div class="sheet-handle-wrap" onclick="closeSheet()">
+    <div class="sheet-handle"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="inv" onclick="setTab('inv')">🎒 Bag</button>
+    <button class="tab-btn" data-tab="shop" onclick="setTab('shop')">🛒 Shop</button>
+  </div>
+  <div id="sheet-content"></div>
+</div>
+
+<!-- Swipe-up hint (mobile only) -->
+<div id="swipe-hint" onclick="openSheet()">↑ Bag &amp; Shop</div>
+
+<div id="toast-wrap"></div>
+
+<div id="sleep-overlay">
+  <div class="sleep-moon">🌙</div>
+  <div class="sleep-text">Resting...</div>
+  <div class="sleep-sub">Crops grow overnight ✨</div>
+</div>
+
+<!-- HELP OVERLAY -->
+<div id="help-overlay">
+  <div class="help-card">
+    <div class="help-glow"></div>
+    <button class="help-skip" onclick="closeHelp()">Skip ✕</button>
+    <div class="help-step-label" id="help-step-label">Step 1 of 10</div>
+    <span class="help-emoji" id="help-emoji">🌾</span>
+    <div class="help-title" id="help-title">Welcome!</div>
+    <div class="help-body" id="help-body"></div>
+    <div class="help-tip" id="help-tip"></div>
+    <div class="help-dots" id="help-dots"></div>
+    <div class="help-nav">
+      <button class="help-back-btn" id="help-prev" onclick="helpNav(-1)" style="display:none">←</button>
+      <button class="help-next-btn" id="help-next" onclick="helpNav(1)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT POPUP -->
+<div id="achieve-popup">
+  <div class="achieve-label">🏆 Achievement Unlocked!</div>
+  <span class="achieve-icon" id="achieve-icon">💰</span>
+  <div class="achieve-name" id="achieve-name"></div>
+  <div class="achieve-desc" id="achieve-desc"></div>
+</div>
+
+<!-- ════════════════════════
+     PAUSE MENU (+ Retro Theme toggle)
+════════════════════════ -->
+<div id="pause-overlay">
+  <div class="pause-card">
+    <div class="pause-title">⏸ Paused</div>
+    <div class="pause-sub" id="pause-sub">Valley Farm</div>
+
+    <div class="pause-row">
+      <div><div class="pause-label">🌙 Dark Mode</div><div class="pause-desc">Easier on the eyes</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-dark" onchange="toggleDark(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🎮 Retro Theme</div><div class="pause-desc">Pixel-art style (like the classics)</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-retro" onchange="toggleRetro(this.checked)"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🔔 Notifications</div><div class="pause-desc">Show popup messages</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-toasts" checked onchange="S.toasts=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">⚡ Energy Cost</div><div class="pause-desc">Actions use energy</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-energy" checked onchange="S.energyCost=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="pause-row">
+      <div><div class="pause-label">🌧️ Random Weather</div><div class="pause-desc">Rain auto-waters crops</div></div>
+      <label class="toggle"><input type="checkbox" id="tog-weather" checked onchange="S.weather=this.checked"><span class="toggle-slider"></span></label>
+    </div>
+
+    <div class="pause-btn-row">
+      <button class="pause-action" onclick="closePause()">▶ Resume</button>
+      <button class="pause-action" onclick="saveAll();toast('Saved! 💾','success');closePause()">💾 Save</button>
+      <button class="pause-action danger" onclick="doLogout()">↩ Sign Out</button>
+    </div>
+    <button class="pause-close" onclick="closePause()">Continue Farming 🌾</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+const GW=14,GH=10;
+const SEASONS=['Spring','Summer','Fall','Winter'];
+const SEASON_COL={Spring:'#16a34a',Summer:'#d97706',Fall:'#c2410c',Winter:'#0369a1'};
+const SEASON_BG={Spring:'#dcfce7',Summer:'#fef9c3',Fall:'#ffedd5',Winter:'#e0f2fe'};
+const GRASS={Spring:'#6dbf67',Summer:'#5aab40',Fall:'#c8973a',Winter:'#93b8c8'};
+const SOIL_N='#a07040',SOIL_W='#5c3820';
+
+const TREES=[
+  [0,0,'🌲'],[0,1,'🌳'],[0,GW-2,'🌳'],[0,GW-1,'🌲'],
+  [GH-1,0,'🌳'],[GH-1,1,'🌲'],[GH-1,GW-2,'🌲'],[GH-1,GW-1,'🌳'],
+  [3,0,'🌴'],[GH-4,0,'🌵'],[3,GW-1,'🌴'],[GH-4,GW-1,'🌵'],
+  [1,0,'🌿'],[GH-2,0,'🌿'],[1,GW-1,'🌿'],[GH-2,GW-1,'🌿'],
+];
+const TMAP=new Map(TREES.map(([r,c,e])=>[r*100+c,e]));
+
+const CROPS={
+  parsnip:    {n:'Parsnip',    e:'🥕',days:4, buy:10,  sell:35,  seasons:['Spring']},
+  carrot:     {n:'Carrot',     e:'🥕',days:3, buy:15,  sell:50,  seasons:['Spring','Fall']},
+  potato:     {n:'Potato',     e:'🥔',days:6, buy:50,  sell:150, seasons:['Spring']},
+  cauliflower:{n:'Cauliflower',e:'🥦',days:12,buy:80,  sell:175, seasons:['Spring']},
+  strawberry: {n:'Strawberry', e:'🍓',days:8, buy:100, sell:300, seasons:['Spring','Summer']},
+  tulip:      {n:'Tulip',      e:'🌷',days:5, buy:30,  sell:90,  seasons:['Spring']},
+  garlic:     {n:'Garlic',     e:'🧄',days:5, buy:40,  sell:100, seasons:['Spring','Fall']},
+  melon:      {n:'Melon',      e:'🍈',days:12,buy:80,  sell:250, seasons:['Summer']},
+  tomato:     {n:'Tomato',     e:'🍅',days:11,buy:50,  sell:180, seasons:['Summer']},
+  corn:       {n:'Corn',       e:'🌽',days:14,buy:150, sell:500, seasons:['Summer','Fall']},
+  sunflower:  {n:'Sunflower',  e:'🌻',days:8, buy:200, sell:350, seasons:['Summer']},
+  pepper:     {n:'Pepper',     e:'🌶',days:9, buy:70,  sell:220, seasons:['Summer']},
+  blueberry:  {n:'Blueberry',  e:'🫐',days:13,buy:80,  sell:125, seasons:['Summer']},
+  eggplant:   {n:'Eggplant',   e:'🍆',days:9, buy:60,  sell:190, seasons:['Summer','Fall']},
+  pumpkin:    {n:'Pumpkin',    e:'🎃',days:13,buy:100, sell:320, seasons:['Fall']},
+  yam:        {n:'Yam',        e:'🍠',days:10,buy:60,  sell:200, seasons:['Fall']},
+  cranberry:  {n:'Cranberry',  e:'🍒',days:7, buy:240, sell:550, seasons:['Fall']},
+  mushroom:   {n:'Mushroom',   e:'🍄',days:6, buy:35,  sell:110, seasons:['Fall']},
+};
+
+/* ══ SETTINGS ══ */
+let S={dark:false,toasts:true,energyCost:true,weather:true,retro:false};
+function loadS(){try{const s=JSON.parse(localStorage.getItem('vf_s'));if(s)S={...S,...s};}catch(e){}}
+function saveS(){localStorage.setItem('vf_s',JSON.stringify(S));}
+function applyS(){
+  document.body.classList.toggle('dark',S.dark&&!S.retro);
+  document.body.classList.toggle('retro',S.retro);
+  document.getElementById('tog-dark').checked=S.dark;
+  document.getElementById('tog-toasts').checked=S.toasts;
+  document.getElementById('tog-energy').checked=S.energyCost;
+  document.getElementById('tog-weather').checked=S.weather;
+  document.getElementById('tog-retro').checked=S.retro;
+}
+function toggleDark(on){
+  S.dark=on;
+  if(on&&S.retro){S.retro=false;document.getElementById('tog-retro').checked=false;}
+  document.body.classList.toggle('dark',on);
+  document.body.classList.toggle('retro',false);
+  saveS();
+}
+function toggleRetro(on){
+  S.retro=on;
+  if(on&&S.dark){S.dark=false;document.getElementById('tog-dark').checked=false;document.body.classList.remove('dark');}
+  document.body.classList.toggle('retro',on);
+  saveS();
+}
+
+/* ══ AUTH ══ */
+let CU=null,authMode='login';
+function getUsers(){return JSON.parse(localStorage.getItem('vf_u')||'{}')}
+function setUsers(u){localStorage.setItem('vf_u',JSON.stringify(u))}
+function getSaves(){return JSON.parse(localStorage.getItem('vf_sv')||'{}')}
+function setSaves(s){localStorage.setItem('vf_sv',JSON.stringify(s))}
+
+function saveAll(){
+  if(!CU)return;
+  const sv=getSaves();sv[CU]={...G,_ts:Date.now()};setSaves(sv);saveS();
+}
+
+function switchAuthTab(mode){
+  authMode=mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',['login','signup'][i]===mode));
+  document.getElementById('auth-submit-btn').textContent=mode==='signup'?'Create Farm':'Sign In';
+  document.getElementById('auth-error').style.display='none';
+  renderSaved();
+}
+
+function renderSaved(){
+  const saves=Object.entries(getSaves());
+  const el=document.getElementById('saved-list');
+  if(authMode==='login'&&saves.length){
+    el.innerHTML='<div class="saved-title">Quick Load</div>'+saves.map(([nm,d])=>
+      `<div class="saved-entry" onclick="quickLoad('${nm}')">
+        <div><div class="saved-entry-name">🧑‍🌾 ${nm}</div><div class="saved-entry-info">Day ${d.day||1} · Yr.${d.year||1} · ${d.gold||0}g</div></div>
+        <span class="saved-entry-del" onclick="event.stopPropagation();delSave('${nm}')">✕</span>
+      </div>`).join('');
+  } else el.innerHTML='';
+}
+
+function delSave(nm){const s=getSaves();delete s[nm];setSaves(s);renderSaved();}
+function quickLoad(nm){document.getElementById('auth-name').value=nm;document.getElementById('auth-pass').value='';authSubmit();}
+
+function authSubmit(){
+  const nm=document.getElementById('auth-name').value.trim();
+  const pw=document.getElementById('auth-pass').value;
+  const err=document.getElementById('auth-error');
+  err.style.display='none';
+  if(!nm){err.textContent='Enter a farmer name!';err.style.display='block';return;}
+  const users=getUsers();
+  if(authMode==='signup'){
+    if(pw.length<4){err.textContent='Password must be 4+ characters.';err.style.display='block';return;}
+    if(users[nm]){err.textContent='Name taken! Try signing in.';err.style.display='block';return;}
+    users[nm]=pw;setUsers(users);CU=nm;initState();saveAll();
+  } else {
+    if(!users[nm]){users[nm]=pw||'farm';setUsers(users);}
+    else if(users[nm]!==pw&&pw){err.textContent='Wrong password!';err.style.display='block';return;}
+    CU=nm;
+    const sv=getSaves()[nm];
+    sv?loadState(sv):initState();
+  }
+  launchGame();
+}
+
+function doLogout(){
+  saveAll();closePause();
+  clearInterval(clockInt);clearInterval(asInt);
+  CU=null;
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('auth-name').value='';
+  document.getElementById('auth-pass').value='';
+  authMode='login';
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('auth-submit-btn').textContent='Sign In';
+  renderSaved();
+}
+
+/* ══ STATE ══ */
+let G={};
+let clockInt=null,asInt=null,paused=false,currentTab='inv';
+
+function mkFarm(){
+  return Array.from({length:GH},()=>Array.from({length:GW},()=>({tilled:false,watered:false,crop:null,idleDays:0})));
+}
+function initState(){
+  G={day:1,si:0,year:1,weather:'sunny',time:360,gold:500,energy:100,
+     farm:mkFarm(),inv:{parsnip:5,carrot:3},bag:{},pending:0,
+     tool:'hoe',seed:'parsnip',stats:{crops:0,earned:0,days:0},
+     yearEarned:0,achievements:[]};
+}
+function loadState(s){
+  G=s;
+  if(!G.stats)G.stats={crops:0,earned:0,days:0};
+  if(!G.achievements)G.achievements=[];
+  if(G.yearEarned===undefined)G.yearEarned=0;
+  G.farm=G.farm.map(row=>row.map(t=>({idleDays:0,...t})));
+}
+
+/* ══ HELPERS ══ */
+function season(){return SEASONS[G.si];}
+function sCrops(){return Object.entries(CROPS).filter(([,c])=>c.seasons.includes(season()));}
+function fmtTime(t){
+  const h=Math.floor(t/60)%24,m=t%60,ap=h>=12?'PM':'AM';
+  const h12=h===0?12:h>12?h-12:h;
+  return `${h12}:${String(m).padStart(2,'0')} ${ap}`;
+}
+function cropStage(c){
+  if(!c)return -1;
+  const d=CROPS[c.type].days;
+  if(c.days>=d)return 3;
+  if(c.days>=Math.ceil(d*0.66))return 2;
+  if(c.days>=Math.ceil(d*0.33))return 1;
+  return 0;
+}
+function dnIcon(t){
+  if(t<420)return'🌅';
+  if(t<780)return'☀️';
+  if(t<1020)return'🌤️';
+  if(t<1140)return'🌆';
+  return'🌙';
+}
+
+/* ══ TOAST ══ */
+let tid=0;
+function toast(msg,type,dur){
+  type=type||'info';dur=dur||2600;
+  if(!S.toasts&&type!=='success')return;
+  const id=++tid,el=document.createElement('div');
+  el.className='toast t-'+type;el.id='t'+id;el.textContent=msg;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>{el.classList.add('toast-out');setTimeout(()=>el.remove(),220);},dur);
+}
+
+/* ══ RENDER HUD ══ */
+function renderHUD(){
+  const s=season();
+  document.getElementById('hud-day').textContent='Day '+G.day;
+  document.getElementById('hud-season').textContent=s;
+  const sp=document.getElementById('season-pill');
+  sp.style.background=S.retro?'transparent':SEASON_BG[s];
+  sp.style.borderColor=S.retro?'transparent':SEASON_COL[s]+'55';
+  sp.style.color=S.retro?'#f5deb3':SEASON_COL[s];
+  document.getElementById('hud-year').textContent='Yr.'+G.year;
+  const rainy=G.weather==='rainy';
+  document.getElementById('weather-em').textContent=rainy?'🌧️':'☀️';
+  document.getElementById('hud-weather').textContent=rainy?'Rainy':'Sunny';
+  document.getElementById('hud-time').textContent=fmtTime(G.time);
+  document.getElementById('dn-icon').textContent=dnIcon(G.time);
+  const tPct=Math.min(100,((G.time-360)/(1320-360))*100);
+  const tb=document.getElementById('time-bar');
+  tb.style.width=tPct+'%';tb.style.background=tPct>80?'#ef4444':'#f59e0b';
+  const eb=document.getElementById('energy-bar');
+  eb.style.width=G.energy+'%';
+  eb.style.background=G.energy>50?'#22c55e':G.energy>25?'#f59e0b':'#ef4444';
+  document.getElementById('hud-energy').textContent=G.energy;
+  document.getElementById('hud-gold').textContent=G.gold+'g';
+  document.getElementById('hud-pending').textContent=G.pending>0?'(+'+G.pending+'g tmrw)':'';
+}
+
+/* ══ RENDER FARM ══ */
+function renderFarm(){
+  const grid=document.getElementById('farm-grid');
+  grid.style.gridTemplateColumns=`repeat(${GW},52px)`;
+  grid.style.gridTemplateRows=`repeat(${GH},52px)`;
+  const gc=GRASS[season()];
+  grid.innerHTML='';
+
+  for(let r=0;r<GH;r++){
+    for(let c=0;c<GW;c++){
+      const tkey=r*100+c;
+
+      if(TMAP.has(tkey)){
+        const div=document.createElement('div');
+        div.className='tile-tree';div.style.background=gc;
+        let em=TMAP.get(tkey);
+        const s=season();
+        if(s==='Fall'&&(em==='🌳'||em==='🌲'))em='🍂';
+        else if(s==='Winter'&&em==='🌳')em='🪨';
+        else if(s==='Winter'&&em==='🌲')em='❄️';
+        div.textContent=em;
+        if(em==='🌵'){div.classList.add('tile-cactus');div.addEventListener('click',cactusClick);}
+        grid.appendChild(div);continue;
+      }
+
+      const tile=G.farm[r][c];
+      const div=document.createElement('div');
+      div.className='tile';
+
+      if(tile.tilled){
+        div.style.background=tile.watered?SOIL_W:SOIL_N;
+        div.style.borderColor='rgba(0,0,0,0.20)';
+        if(!tile.crop&&(tile.idleDays||0)>=1)div.classList.add('tile-idle');
+      } else {
+        div.style.background=gc;
+      }
+
+      const st=cropStage(tile.crop);
+      const ready=st===3;
+      if(ready)div.classList.add('tile-ready');
+      if(tile.crop)div.classList.add('tile-s'+st);
+
+      if(tile.crop){
+        const ci=document.createElement('span');ci.className='crop-em';
+        ci.textContent=['🌱','🌿','🪴',CROPS[tile.crop.type].e][st];
+        div.appendChild(ci);
+        if(ready){
+          const sp=document.createElement('span');sp.className='sparkle';sp.textContent='✨';div.appendChild(sp);
+        } else {
+          const db=document.createElement('span');db.className='days-badge';
+          db.textContent=(CROPS[tile.crop.type].days-tile.crop.days)+'d';div.appendChild(db);
+        }
+      } else if(!tile.tilled){
+        const g2=document.createElement('span');g2.className='grass-deco';g2.textContent='🌾';div.appendChild(g2);
+      }
+      if(tile.watered&&!tile.crop){const wd=document.createElement('div');wd.className='water-dot';div.appendChild(wd);}
+      div.addEventListener('click',()=>clickTile(r,c));
+      grid.appendChild(div);
+    }
+  }
+}
+
+/* ══ RENDER SHEET ══ */
+function renderSide(){
+  const html=currentTab==='inv'?buildInv():buildShop();
+  ['side-content','sheet-content'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML=html;
+    el.querySelectorAll('[data-sell]').forEach(b=>b.addEventListener('click',shipAll));
+    el.querySelectorAll('[data-buy]').forEach(b=>b.addEventListener('click',()=>buySeed(b.dataset.buy,+b.dataset.qty)));
+  });
+}
+function buildInv(){
+  const seeds=Object.entries(G.inv).filter(([,q])=>q>0);
+  const bag=Object.entries(G.bag).filter(([,q])=>q>0);
+  const total=bag.reduce((s,[t,q])=>s+CROPS[t].sell*q,0);
+  let h='<div class="s-sec">🌱 Seeds</div>';
+  if(!seeds.length)h+='<p class="empty-msg">No seeds.<br>Visit the shop!</p>';
+  seeds.forEach(([t,q])=>{h+=`<div class="inv-row"><span>${CROPS[t].e} ${CROPS[t].n}</span><span class="inv-qty">×${q}</span></div>`;});
+  h+='<div class="s-sec">🧺 Harvested</div>';
+  if(!bag.length)h+='<p class="empty-msg">Harvest ready crops<br>with the scythe!</p>';
+  bag.forEach(([t,q])=>{h+=`<div class="inv-row"><span>${CROPS[t].e} ${CROPS[t].n}</span><span class="inv-val">×${q} · ${CROPS[t].sell*q}g</span></div>`;});
+  if(bag.length)h+=`<button class="ship-btn" data-sell="1">📦 Ship All · ${total}g</button>`;
+  if(G.pending>0)h+=`<div class="pending-box">📮 Shipping<br><b>${G.pending}g</b> arrives tomorrow</div>`;
+  h+=`<div class="stats-box"><b>📊 Stats</b><br>🌾 Harvested: ${G.stats.crops}<br>💰 Earned: ${G.stats.earned}g<br>📅 Days: ${G.stats.days}<br>📆 Year: ${G.year}</div>`;
+  return h;
+}
+function buildShop(){
+  const s=season();
+  if(s==='Winter')return`<div class="winter-msg">❄️<br><br>Nothing grows in Winter.<br><br>Rest up — Spring is coming!</div>`;
+  let h=`<div class="s-sec">🌞 ${s} Seeds</div>`;
+  sCrops().forEach(([type,crop])=>{
+    const c5=crop.buy*5,c10=crop.buy*10,hv=G.inv[type]||0;
+    h+=`<div class="shop-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+        <span class="shop-name">${crop.e} ${crop.n}</span><span class="shop-price">${crop.buy}g</span>
+      </div>
+      <div class="shop-meta">⏱ ${crop.days}d · sells ${crop.sell}g · have: ${hv}</div>
+      <div class="shop-row">
+        <button class="buy-btn" data-buy="${type}" data-qty="5" ${G.gold<c5?'disabled':''}>×5 (${c5}g)</button>
+        <button class="buy-btn" data-buy="${type}" data-qty="10" ${G.gold<c10?'disabled':''}>×10 (${c10}g)</button>
+      </div></div>`;
+  });
+  return h;
+}
+function render(){renderHUD();renderFarm();renderSide();updateSeedSel();}
+function updateSeedSel(){
+  const sel=document.getElementById('seed-select');
+  sel.style.display=G.tool==='seed'?'block':'none';
+  if(G.tool!=='seed')return;
+  const av=sCrops();
+  sel.innerHTML=av.map(([t,c])=>`<option value="${t}"${t===G.seed?' selected':''}${!(G.inv[t]||0)?' disabled':''}>${c.e} ${c.n} (×${G.inv[t]||0})</option>`).join('');
+  if(!(G.inv[G.seed]||0)){const alt=av.find(([t])=>(G.inv[t]||0)>0);if(alt)G.seed=alt[0];}
+  sel.value=G.seed;
+}
+
+/* ══ TOOLS / TABS ══ */
+function setTab(t){
+  currentTab=t;
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  renderSide();
+}
+function setTool(t){
+  G.tool=t;
+  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('tool-'+t);if(el)el.classList.add('active');
+  updateSeedSel();
+}
+
+/* ══ TILE CLICK ══ */
+function clickTile(r,c){
+  if(paused)return;
+  if(G.energy<=0){toast('Too tired! 😴 Sleep to restore energy.','error');return;}
+  const tile=G.farm[r][c];let changed=false;
+  const useE=()=>{if(S.energyCost)G.energy=Math.max(0,G.energy-1);};
+
+  if(G.tool==='hoe'){
+    if(!tile.tilled){G.farm[r][c]={...tile,tilled:true,idleDays:0};useE();toast('Tilled! 🌱','success');changed=true;}
+    else toast('Already tilled!','info',1100);
+  }
+  else if(G.tool==='water'){
+    if(!tile.tilled){toast('Till the soil first!','warn',1100);return;}
+    if(tile.watered){toast('Already watered!','info',1100);return;}
+    G.farm[r][c]={...tile,watered:true};useE();toast('Watered! 💧','info');changed=true;
+  }
+  else if(G.tool==='seed'){
+    if(!tile.tilled){toast('Till first!','warn',1100);return;}
+    if(tile.crop){toast('Already planted!','warn',1100);return;}
+    const cr=CROPS[G.seed];
+    if(!cr.seasons.includes(season())){toast(cr.n+' won\'t grow in '+season()+'!','error');return;}
+    if(!(G.inv[G.seed]||0)){toast('No '+cr.n+' seeds!','error');return;}
+    G.farm[r][c]={...tile,crop:{type:G.seed,days:0},idleDays:0};
+    G.inv[G.seed]--;
+    toast('Planted '+cr.n+'! 🌱','success');changed=true;
+  }
+  else if(G.tool==='scythe'){
+    if(!tile.crop){toast('No crop here!','warn',1100);return;}
+    if(cropStage(tile.crop)!==3){toast('Not ready! '+(CROPS[tile.crop.type].days-tile.crop.days)+'d left.','warn');return;}
+    const cr=CROPS[tile.crop.type];
+    G.bag[tile.crop.type]=(G.bag[tile.crop.type]||0)+1;
+    G.farm[r][c]={...tile,crop:null,watered:false,idleDays:0};
+    useE();G.stats.crops++;
+    toast('Harvested '+cr.n+'! '+cr.e,'success');changed=true;
+  }
+  if(changed)render();
+}
+
+/* ══ SELL / BUY ══ */
+function shipAll(){
+  const ent=Object.entries(G.bag).filter(([,q])=>q>0);
+  if(!ent.length){toast('Nothing to ship!','error');return;}
+  let total=0;ent.forEach(([t,q])=>{total+=CROPS[t].sell*q;});
+  G.bag={};G.pending+=total;G.stats.earned+=total;
+  toast('📦 Shipped '+total+'g — arrives tomorrow!','success');render();
+}
+function buySeed(type,qty){
+  const cr=CROPS[type],cost=cr.buy*qty;
+  if(G.gold<cost){toast('Need '+cost+'g! 💸','error');return;}
+  G.gold-=cost;G.inv[type]=(G.inv[type]||0)+qty;
+  toast('Bought ×'+qty+' '+cr.n+'!','success');render();
+}
+
+/* ══ SLEEP / DAY ADVANCE ══ */
+function doSleep(){
+  if(paused)return;
+  clearInterval(clockInt);
+  document.getElementById('sleep-overlay').classList.add('show');
+  const earned=G.pending,prevSi=G.si;
+  setTimeout(()=>{
+    advanceDay();
+    checkAchievements();
+    document.getElementById('sleep-overlay').classList.remove('show');
+    saveAll();
+    const msgs=[];
+    if(earned>0)msgs.push({m:'💰 Received '+earned+'g from shipping!',t:'success'});
+    if(G.weather==='rainy')msgs.push({m:'🌧️ It\'s raining! Crops watered.',t:'info'});
+    if(G.si!==prevSi){msgs.push({m:['🌸','☀️','🍂','❄️'][G.si]+' '+season()+' has arrived!',t:'warn'});showSeasonBanner();}
+    msgs.push({m:'🌅 Good morning, '+CU+'! Day '+G.day,t:'info'});
+    msgs.forEach(({m,t},i)=>setTimeout(()=>toast(m,t,3200),i*600));
+    startClock();render();
+  },1800);
+}
+
+function advanceDay(){
+  G.farm=G.farm.map(row=>row.map(tile=>{
+    if(!tile.crop){
+      if(!tile.tilled)return{tilled:false,watered:false,crop:null,idleDays:0};
+      const idle=(tile.idleDays||0)+1;
+      if(idle>=2)return{tilled:false,watered:false,crop:null,idleDays:0};
+      return{...tile,watered:false,idleDays:idle};
+    }
+    const cr=CROPS[tile.crop.type],s=season();
+    if(s==='Winter'||!cr.seasons.includes(s))return{tilled:true,watered:false,crop:null,idleDays:0};
+    const newDays=tile.watered?tile.crop.days+1:tile.crop.days;
+    return{...tile,watered:false,crop:{...tile.crop,days:newDays},idleDays:0};
+  }));
+  G.yearEarned=(G.yearEarned||0)+G.pending;
+  G.gold+=G.pending;G.pending=0;
+  G.day++;
+  if(G.day>28){G.day=1;G.si=(G.si+1)%4;if(G.si===0){G.year++;G.yearEarned=0;}}
+  G.weather=(S.weather&&Math.random()<0.25)?'rainy':'sunny';
+  if(G.weather==='rainy')G.farm=G.farm.map(row=>row.map(t=>t.tilled?{...t,watered:true}:t));
+  G.time=360;G.energy=100;G.stats.days++;
+}
+
+function showSeasonBanner(){
+  const b=document.createElement('div');b.className='season-banner';
+  b.textContent=['🌸','☀️','🍂','❄️'][G.si]+' '+season()+' has arrived!';
+  document.body.appendChild(b);setTimeout(()=>b.remove(),2800);
+}
+
+/* ══ CLOCK ══ */
+function startClock(){
+  clearInterval(clockInt);
+  clockInt=setInterval(()=>{
+    if(paused)return;
+    G.time+=2;
+    if(G.time>=1320){clearInterval(clockInt);toast('💤 Fell asleep — it\'s late!','info',2500);setTimeout(doSleep,1000);return;}
+    renderHUD();
+  },300);
+}
+
+/* ══ PAUSE ══ */
+function openPause(){
+  paused=true;
+  document.getElementById('pause-sub').textContent='Valley Farm · Day '+G.day+' · Yr.'+G.year;
+  document.getElementById('pause-overlay').classList.add('show');
+}
+function closePause(){
+  paused=false;
+  document.getElementById('pause-overlay').classList.remove('show');
+}
+document.getElementById('pause-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('pause-overlay'))closePause();
+});
+document.getElementById('help-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('help-overlay'))closeHelp();
+});
+
+/* ══ BAG TOGGLE (desktop = collapse side panel, mobile = bottom sheet) ══ */
+function toggleBag(){
+  if(window.innerWidth>680){
+    const side=document.getElementById('side');
+    const collapsed=side.classList.toggle('side-collapsed');
+    if(!collapsed)renderSide();
+  } else {
+    sheetOpen?closeSheet():openSheet();
+  }
+}
+
+/* ══ BOTTOM SHEET ══ */
+let sheetOpen=false;
+function openSheet(){
+  if(sheetOpen)return;
+  sheetOpen=true;
+  renderSide();
+  document.getElementById('bottom-sheet').classList.add('sheet-open');
+  document.getElementById('sheet-bg').classList.add('sheet-open');
+  document.getElementById('swipe-hint').style.display='none';
+}
+function closeSheet(){
+  if(!sheetOpen)return;
+  sheetOpen=false;
+  document.getElementById('bottom-sheet').classList.remove('sheet-open');
+  document.getElementById('sheet-bg').classList.remove('sheet-open');
+}
+
+/* ══ SWIPE GESTURE ══ */
+(function(){
+  let touchStartY=0,touchStartX=0,tracking=false;
+  const SWIPE_THRESHOLD=55;
+
+  document.getElementById('farm-wrap').addEventListener('touchstart',e=>{
+    touchStartY=e.touches[0].clientY;
+    touchStartX=e.touches[0].clientX;
+    tracking=true;
+  },{passive:true});
+
+  document.getElementById('farm-wrap').addEventListener('touchend',e=>{
+    if(!tracking)return;
+    tracking=false;
+    const dy=touchStartY-e.changedTouches[0].clientY;
+    const dx=Math.abs(touchStartX-e.changedTouches[0].clientX);
+    if(dx>60)return;
+    if(dy>SWIPE_THRESHOLD&&!sheetOpen)openSheet();
+  },{passive:true});
+
+  const sheet=document.getElementById('bottom-sheet');
+  let sheetTouchStartY=0;
+  sheet.addEventListener('touchstart',e=>{
+    sheetTouchStartY=e.touches[0].clientY;
+  },{passive:true});
+  sheet.addEventListener('touchend',e=>{
+    const dy=sheetTouchStartY-e.changedTouches[0].clientY;
+    const content=document.getElementById('sheet-content');
+    const atTop=content.scrollTop<=2;
+    if(dy<-SWIPE_THRESHOLD&&(sheetTouchStartY<sheet.getBoundingClientRect().top+80||atTop)){
+      closeSheet();
+    }
+  },{passive:true});
+})();
+
+/* ══ CACTUS CHEAT CODE ══ */
+let cactusClicks=0,cactusTimer=null;
+function cactusClick(){
+  if(paused)return;
+  cactusClicks++;
+  clearTimeout(cactusTimer);
+  cactusTimer=setTimeout(()=>{cactusClicks=0;},2200);
+  if(cactusClicks>=3){
+    cactusClicks=0;clearTimeout(cactusTimer);
+    let count=0;
+    G.farm=G.farm.map(row=>row.map(t=>{
+      if(t.tilled&&!t.watered){count++;return{...t,watered:true};}
+      return t;
+    }));
+    if(count>0){toast('🌵✨ Cactus secret! All crops watered!','success',3200);render();}
+    else toast('🌵 Nothing left to water!','info');
+  } else {
+    const hints=['🌵 Hmm...','🌵🌵 Almost...',''];
+    if(hints[cactusClicks-1])toast(hints[cactusClicks-1],'info',900);
+  }
+}
+
+/* ══ ACHIEVEMENTS ══ */
+function checkAchievements(){
+  if(!G.achievements)G.achievements=[];
+  const key='rich_yr'+G.year;
+  if((G.yearEarned||0)>=20000&&!G.achievements.includes(key)){
+    G.achievements.push(key);
+    setTimeout(()=>showAchievement('💰','Tycoon Farmer!','Earned 20,000g in Year '+G.year+'!'),1600);
+  }
+}
+function showAchievement(icon,name,desc){
+  const p=document.getElementById('achieve-popup');
+  document.getElementById('achieve-icon').textContent=icon;
+  document.getElementById('achieve-name').textContent=name;
+  document.getElementById('achieve-desc').textContent=desc;
+  p.classList.remove('show');
+  void p.offsetWidth; // reflow to restart animation
+  p.classList.add('show');
+  clearTimeout(p._hideTimer);
+  p._hideTimer=setTimeout(()=>p.classList.remove('show'),4800);
+}
+
+/* ══ HELP / TUTORIAL ══ */
+const HELP_STEPS=[
+  {e:'🌾',title:'Welcome to Valley Farm!',body:'Grow crops, earn gold, and build your fucking farming empire. Each year has 4 seasons of 28 days. The game auto-saves every 30 seconds.',tip:'Tip: Your farm persists — come back any time!'},
+  {e:'⛏',title:'Tilling the Soil',body:'Select the Hoe tool from the toolbar, then tap any green grass tile to till it. Tilled soil left empty for 2 days will revert back to grass!',tip:'Shortcut: Press H to switch to the Hoe.'},
+  {e:'🛒',title:'Buying Seeds',body:'Open the Bag panel (🎒 button or swipe up on mobile) and switch to the Shop tab. Seeds are season-specific — you can only buy what grows now!',tip:'Tip: Different seasons have different crops.'},
+  {e:'🌱',title:'Planting Seeds',body:'Select the Seeds tool, choose a seed from the dropdown that appears, then tap a tilled tile. Each planting uses one seed from your inventory.',tip:'Shortcut: Press S to switch to Seeds.'},
+  {e:'💧',title:'Watering Your Crops',body:'Select the Water tool and tap any planted tile. Crops only grow on days they are watered. Miss a day and that day\'s growth is lost!',tip:'Shortcut: Press W to switch to Water.'},
+  {e:'✨',title:'Harvesting Crops',body:'When a crop is fully grown it glows with ✨ and pulses. Select the Scythe tool and tap it to harvest it into your bag ready for shipping.',tip:'Shortcut: Press R to switch to Scythe.'},
+  {e:'📦',title:'Shipping for Gold',body:'Open the Bag panel and press Ship All to send your harvested crops. The gold doesn\'t arrive instantly — it comes the next morning after sleeping!',tip:'Tip: Ship at night so gold arrives first thing.'},
+  {e:'🌙',title:'Sleeping & Days',body:'Press Sleep (or Space) to end the day. Crops grow overnight, weather changes, and your pending gold arrives. Staying up past 10 PM puts you to sleep automatically!',tip:'Shortcut: Press Space to sleep.'},
+  {e:'🍂',title:'Seasons',body:'Spring, Summer, Fall, Winter — each lasts 28 days. Crops planted in the wrong season won\'t grow. Winter has no crops — use it to plan ahead!',tip:'Tip: Some crops take 12+ days, plan accordingly.'},
+  {e:'⚡',title:'Energy & Secrets',body:'Every tool action costs 1 energy. Running out means you can\'t work until you sleep. Restore it fully by sleeping. You can disable energy cost in the ⏸ Menu.',tip:'🌵 Psst… the cacti are hiding a secret…'},
+];
+let helpStep=0;
+function openHelp(){
+  helpStep=0;
+  paused=true;
+  renderHelpStep();
+  document.getElementById('help-overlay').classList.add('show');
+}
+function closeHelp(){
+  document.getElementById('help-overlay').classList.remove('show');
+  paused=false;
+}
+function helpNav(dir){
+  helpStep=Math.max(0,Math.min(HELP_STEPS.length-1,helpStep+dir));
+  if(dir>0&&helpStep===HELP_STEPS.length-1){
+    // On last step, pressing next closes
+    renderHelpStep();
+    document.getElementById('help-next').textContent='Done ✓';
+    document.getElementById('help-next').onclick=closeHelp;
+    return;
+  }
+  document.getElementById('help-next').textContent='Next →';
+  document.getElementById('help-next').onclick=()=>helpNav(1);
+  renderHelpStep();
+}
+function renderHelpStep(){
+  const step=HELP_STEPS[helpStep];
+  document.getElementById('help-emoji').textContent=step.e;
+  document.getElementById('help-title').textContent=step.title;
+  document.getElementById('help-body').textContent=step.body;
+  document.getElementById('help-tip').textContent=step.tip;
+  document.getElementById('help-step-label').textContent='Step '+(helpStep+1)+' of '+HELP_STEPS.length;
+  document.getElementById('help-dots').innerHTML=HELP_STEPS.map((_,i)=>`<div class="help-dot${i===helpStep?' active':''}"></div>`).join('');
+  const prevBtn=document.getElementById('help-prev');
+  prevBtn.style.display=helpStep===0?'none':'block';
+  const nextBtn=document.getElementById('help-next');
+  nextBtn.textContent=helpStep===HELP_STEPS.length-1?'Done ✓':'Next →';
+  nextBtn.onclick=helpStep===HELP_STEPS.length-1?closeHelp:()=>helpNav(1);
+}
+
+/* ══ LAUNCH ══ */
+function launchGame(){
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  render();startClock();
+  clearInterval(asInt);
+  asInt=setInterval(saveAll,30000);
+  toast('Welcome back, '+CU+'! 🌾','success',2800);
+}
+
+/* ══ KEYBOARD ══ */
+window.addEventListener('keydown',e=>{
+  if(!document.getElementById('game-screen').classList.contains('active'))return;
+  if(e.code==='Escape'){
+    if(document.getElementById('help-overlay').classList.contains('show')){closeHelp();return;}
+    if(sheetOpen){closeSheet();return;}
+    paused?closePause():openPause();return;
+  }
+  if(e.key==='?'||e.code==='Slash'){openHelp();return;}
+  if(paused||sheetOpen)return;
+  const map={KeyH:'hoe',KeyW:'water',KeyS:'seed',KeyR:'scythe'};
+  if(map[e.code])setTool(map[e.code]);
+  if(e.code==='Space'){e.preventDefault();doSleep();}
+});
+
+/* ══ INIT ══ */
+loadS();applyS();renderSaved();
+</script>
+</body>
+</html>
